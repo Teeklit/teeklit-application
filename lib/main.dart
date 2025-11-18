@@ -13,10 +13,8 @@ class TeeklitApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFF121212),
-      ),
-      home: const TeekleSelectWorkoutScreen(),
+      theme: ThemeData(scaffoldBackgroundColor: const Color(0xFF121212)),
+      home: TeekleSelectWorkoutScreen(),
     );
   }
 }
