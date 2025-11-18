@@ -32,3 +32,10 @@ enum DayOfWeek {
     return DayOfWeek.values.firstWhere((e) => e.name == name);
   }
 }
+
+enum TeeklePageType {
+  addTodo,
+  editTodo,
+  addWorkout,
+  editWorkout
+}

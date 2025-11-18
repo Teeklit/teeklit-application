@@ -4,23 +4,12 @@ import 'package:teeklit/utils/colors.dart';
 import 'bottom_sheet_header.dart';
 import 'package:intl/intl.dart';
 import '../../../utils/datetime_extension.dart';
-
-enum RepeatPeriod { weekly, monthly }
-
-enum DayOfWeek {
-  monday,
-  tuesday,
-  wednesday,
-  thursday,
-  friday,
-  saturday,
-  sunday,
-}
+import 'package:teeklit/domain/model/enums.dart';
 
 typedef OnRepeatChanged =
     void Function(
       bool hasRepeat,
-      RepeatPeriod? period,
+      RepeatUnit? period,
       int? interval,
       DateTime? repeatEndDate,
       List<DayOfWeek>? daysOfWeek,
@@ -29,7 +18,7 @@ typedef OnRepeatChanged =
 Future<void> showTeekleRepeatSetting(
   BuildContext context, {
   required bool hasRepeat,
-  required RepeatPeriod? period,
+  required RepeatUnit? period,
   required int? interval,
   required DateTime? repeatEndDate,
   required List<DayOfWeek>? daysOfWeek,
@@ -55,7 +44,7 @@ Future<void> showTeekleRepeatSetting(
 
 class RepeatBottomSheet extends StatefulWidget {
   final bool initialHasRepeat;
-  final RepeatPeriod? initialPeriod;
+  final RepeatUnit? initialPeriod;
   final int? initialInterval;
   final DateTime? initialRepeatEndDate;
   final List<DayOfWeek>? initialDaysOfWeek;
@@ -77,7 +66,7 @@ class RepeatBottomSheet extends StatefulWidget {
 
 class _RepeatBottomSheetState extends State<RepeatBottomSheet> {
   late bool _hasRepeat;
-  late RepeatPeriod? _repeatPeriod;
+  late RepeatUnit? _repeatPeriod;
   late int _interval;
   late DateTime _repeatEndDate;
   late List<DayOfWeek> _selectedDaysOfWeek;
@@ -91,7 +80,7 @@ class _RepeatBottomSheetState extends State<RepeatBottomSheet> {
   void initState() {
     super.initState();
     _hasRepeat = widget.initialHasRepeat;
-    _repeatPeriod = widget.initialPeriod ?? RepeatPeriod.weekly;
+    _repeatPeriod = widget.initialPeriod ?? RepeatUnit.weekly;
     _interval = widget.initialInterval ?? 1;
     _repeatEndDate = widget.initialRepeatEndDate ?? DateTime.now().toDateOnly();
     _selectedDaysOfWeek = List.from(widget.initialDaysOfWeek ?? []);
@@ -152,7 +141,7 @@ class _RepeatBottomSheetState extends State<RepeatBottomSheet> {
                     duration: const Duration(milliseconds: 100),
                     child: AnimatedAlign(
                       duration: const Duration(milliseconds: 200),
-                      alignment: _repeatPeriod == RepeatPeriod.weekly
+                      alignment: _repeatPeriod == RepeatUnit.weekly
                           ? Alignment.centerLeft
                           : Alignment.centerRight,
                       curve: Curves.easeInOut,
@@ -172,7 +161,7 @@ class _RepeatBottomSheetState extends State<RepeatBottomSheet> {
                           behavior: HitTestBehavior.opaque,
                           onTap: () => setState(() {
                             _hasRepeat = true;
-                            _repeatPeriod = RepeatPeriod.weekly;
+                            _repeatPeriod = RepeatUnit.weekly;
                             _notifyStateChange();
                           }),
                           child: Center(
@@ -181,7 +170,7 @@ class _RepeatBottomSheetState extends State<RepeatBottomSheet> {
                               style: TextStyle(
                                 color:
                                     _hasRepeat &&
-                                        _repeatPeriod == RepeatPeriod.weekly
+                                        _repeatPeriod == RepeatUnit.weekly
                                     ? AppColors.TxtDark
                                     : Colors.white,
                                 fontWeight: FontWeight.w500,
@@ -195,7 +184,7 @@ class _RepeatBottomSheetState extends State<RepeatBottomSheet> {
                           behavior: HitTestBehavior.opaque,
                           onTap: () => setState(() {
                             _hasRepeat = true;
-                            _repeatPeriod = RepeatPeriod.monthly;
+                            _repeatPeriod = RepeatUnit.monthly;
                             _notifyStateChange();
                           }),
                           child: Center(
@@ -204,7 +193,7 @@ class _RepeatBottomSheetState extends State<RepeatBottomSheet> {
                               style: TextStyle(
                                 color:
                                     _hasRepeat &&
-                                        _repeatPeriod == RepeatPeriod.monthly
+                                        _repeatPeriod == RepeatUnit.monthly
                                     ? AppColors.TxtDark
                                     : Colors.white,
                                 fontWeight: FontWeight.w500,
@@ -323,7 +312,7 @@ class _RepeatBottomSheetState extends State<RepeatBottomSheet> {
                         child: Row(
                           children: [
                             Text(
-                              _repeatPeriod == RepeatPeriod.weekly
+                              _repeatPeriod == RepeatUnit.weekly
                                   ? '$_interval주마다'
                                   : '$_interval달마다',
                               style: const TextStyle(
@@ -358,7 +347,7 @@ class _RepeatBottomSheetState extends State<RepeatBottomSheet> {
                         children: List.generate(
                           3, (index) => Center(
                             child: Text(
-                              _repeatPeriod == RepeatPeriod.weekly
+                              _repeatPeriod == RepeatUnit.weekly
                                   ? '${index + 1}주마다'
                                   : '${index + 1}달마다',
                               style: const TextStyle(color: Colors.white),
