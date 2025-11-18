@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/theme/app_colors.dart';
-import 'package:teeklit/theme/app_text.dart';
+import 'package:teeklit_application/ui/core/themes/colors.dart';
+import 'package:teeklit_application/ui/core/themes/app_text.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -16,7 +16,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2C2C2E),
+      backgroundColor: AppColors.bg,
       body: Stack(
         children: [
           PageView(

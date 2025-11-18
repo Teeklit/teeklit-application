@@ -1,134 +1,92 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/login/signup_terms_screen.dart';
+import 'package:teeklit_application/login/signup_terms_screen.dart';
+import 'package:teeklit_application/ui/core/themes/colors.dart';
+import 'login_style.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
-  // 공통 텍스트 스타일들
-  TextStyle get _hintStyle => const TextStyle(
-    fontFamily: 'Paperlogy',
-    fontSize: 14,
-    color: Color(0xFFBBBBBB),
-  );
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
 
-  TextStyle get _captionStyle => const TextStyle(
-    fontFamily: 'Paperlogy',
-    fontSize: 12,
-    color: Colors.white,
-  );
-
-  TextStyle get _inputTextStyle => const TextStyle(
-    fontFamily: 'Paperlogy',
-    fontSize: 14,
-    color: Colors.white,
-  );
-
-  TextStyle get _buttonTextStyle => const TextStyle(
-    fontFamily: 'Paperlogy',
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    color: Colors.black,
-  );
+class _LoginScreenState extends State<LoginScreen> {
+  bool _passwordVisible = false; // 비밀번호 보기 토글 상태
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2C2C2E), // 배경이 문제네
+      backgroundColor: AppColors.bg,
 
       body: SafeArea(
-        child: Stack(
-          children: [
-            /// 🔹 오른쪽 상단 X 아이콘
-            Positioned(
-              top: 8,
-              right: 8,
-              child: GestureDetector(
-                onTap: () => Navigator.maybePop(context),
-                child: Image.asset(
-                  "assets/Images/close.png",
-                  width: 24,
-                  height: 24,
-                  fit: BoxFit.contain,
-                ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: size.width * 0.06),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 132),
+
+              /// 로고
+              Image.asset(
+                "assets/images/teeklit_logo.png",
+                width: 112,
+                height: 150.5,
+                fit: BoxFit.contain,
               ),
-            ),
 
-            /// 🔹 본문
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: size.width * 0.06),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+              const SizedBox(height: 80),
+
+              /// 이메일 입력
+              _inputField(
+                hint: "이메일 주소",
+                isPassword: false,
+              ),
+
+              const SizedBox(height: 12),
+
+              /// 비밀번호 입력 + 👁️ 아이콘
+              _inputField(
+                hint: "비밀번호",
+                isPassword: true,
+              ),
+
+              const SizedBox(height: 20),
+
+              /// 아이디/비번 찾기 + 이메일 가입
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 132),
+                  Text("아이디 / 비밀번호 찾기", style: LoginStyle.captionStyle),
 
-                  /// 로고
-                  Image.asset(
-                    "assets/Images/teeklit_logo.png",
-                    width: 112,
-                    height: 150.5,
-                    fit: BoxFit.contain,
-                  ),
+                  const SizedBox(width: 12),
+                  Text("|", style: LoginStyle.captionStyle),
+                  const SizedBox(width: 12),
 
-                  const SizedBox(height: 80),
-
-                  /// 이메일 입력
-                  _inputField(
-                    hint: "이메일 주소",
-                    isPassword: false,
-                    hintStyle: _hintStyle,
-                    textStyle: _inputTextStyle,
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  /// 비밀번호 입력
-                  _inputField(
-                    hint: "비밀번호",
-                    isPassword: true,
-                    hintStyle: _hintStyle,
-                    textStyle: _inputTextStyle,
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  /// 아이디/비번 찾기 + 이메일 가입
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("아이디 / 비밀번호 찾기", style: _captionStyle),
-                      const SizedBox(width: 12),
-                      Text("|", style: _captionStyle),
-                      const SizedBox(width: 12),
-
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => SignupTermsScreen(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          "이메일 가입하기",
-                          style: _captionStyle.copyWith(
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => SignupTermsScreen()),
+                      );
+                    },
+                    child: Text(
+                      "이메일 가입하기",
+                      style: LoginStyle.captionStyle.copyWith(
+                        decoration: TextDecoration.underline,
                       ),
-                    ],
+                    ),
                   ),
-
-                  const SizedBox(height: 32),
-
-                  /// 로그인 버튼
-                  _loginButton(),
                 ],
               ),
-            ),
-          ],
+
+              const SizedBox(height: 32),
+
+              /// 로그인 버튼
+              _loginButton(),
+            ],
+          ),
         ),
       ),
     );
@@ -140,31 +98,41 @@ class LoginScreen extends StatelessWidget {
   Widget _inputField({
     required String hint,
     required bool isPassword,
-    required TextStyle hintStyle,
-    required TextStyle textStyle,
   }) {
     return TextField(
-      obscureText: isPassword,
-      style: textStyle,
+      obscureText: isPassword && !_passwordVisible,
+      style: LoginStyle.inputTextStyle,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: hintStyle,
+        hintStyle: LoginStyle.hintStyle,
         filled: true,
         fillColor: const Color(0xFF4A4A4A),
-        contentPadding:
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
+
+        /// 🔹 비밀번호면 suffixIcon 생성
         suffixIcon: isPassword
-            ? Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: Image.asset(
-            "assets/Images/Calendar.png",
-            width: 24,
-            height: 24,
-            fit: BoxFit.contain,
+            ? SizedBox(
+          width: 40, // 👁 아이콘 영역 고정 → 텍스트와 충돌 방지
+          child: IconButton(
+            padding: EdgeInsets.zero,
+            icon: Image.asset(
+              _passwordVisible
+                  ? "assets/images/eye_off.png"
+                  : "assets/images/eye.png",
+              width: 20,
+              height: 20,
+            ),
+
+            /// 👁 버튼 눌렀을 때 토글
+            onPressed: () {
+              setState(() {
+                _passwordVisible = !_passwordVisible;
+              });
+            },
           ),
         )
             : null,
@@ -186,13 +154,11 @@ class LoginScreen extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFB1C39F),
             foregroundColor: Colors.black,
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
-          child: Text(
-            "로그인",
-            style: _buttonTextStyle,
-          ),
+          child: Text("로그인", style: LoginStyle.buttonTextStyle),
         ),
       ),
     );

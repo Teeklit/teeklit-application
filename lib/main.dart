@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/theme/app_colors.dart';
-import 'package:teeklit/theme/app_text.dart';
-import 'package:teeklit/login/login_screen.dart';
+import 'package:teeklit_application/ui/core/themes/colors.dart';
+import 'package:teeklit_application/ui/core/themes/app_text.dart';
+import 'package:teeklit_application/login/login_screen.dart';
 
-void main() {
+//파이어베이스
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();      // ← 중요
+  await Firebase.initializeApp(                   // ← 중요
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -16,7 +25,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Teeklit',
       theme: ThemeData(
-        fontFamily: 'Paperlogy',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: const LoginScreen(),

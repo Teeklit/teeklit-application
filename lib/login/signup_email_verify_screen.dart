@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 // 회원가입3. 비밀번호 입력 파트.
-import 'package:teeklit/login/signup_password_screen.dart';
+import 'package:teeklit_application/login/signup_password_screen.dart';
+import 'package:teeklit_application/ui/core/themes/colors.dart';
 
 
 class SignupVerifyScreen extends StatelessWidget {
@@ -10,19 +11,17 @@ class SignupVerifyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1C1C1C), // stroke_gray 근접값
+      backgroundColor: AppColors.bg,
 
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Image.asset(
-            'assets/Images/left_line.png',
-            width: 24,
-            height: 24,
-            color: Colors.white,          // PNG가 회색이면 앱 스타일에 맞게 흰색 오버레이
-            colorBlendMode: BlendMode.srcIn,
+          icon: Icon(
+            Icons.chevron_left,
+            size: 28,
+            color: AppColors.strokeGray, // 앱 컬러
           ),
         ),
       ),

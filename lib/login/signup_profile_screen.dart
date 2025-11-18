@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/theme/app_text.dart';
+import 'package:teeklit_application/ui/core/themes/app_text.dart';
+import 'package:teeklit_application/ui/core/themes/colors.dart';
 
 class SignupProfileScreen extends StatelessWidget {
   const SignupProfileScreen({super.key});
@@ -7,16 +8,16 @@ class SignupProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2C2C2E),
+      backgroundColor: AppColors.bg,
 
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Image.asset(
-            'assets/Images/left_line.png',
-            width: 20,
-            height: 20,
+          icon: Icon(
+            Icons.chevron_left,
+            size: 28,
+            color: AppColors.strokeGray, // 앱 컬러
           ),
           onPressed: () => Navigator.pop(context),
         ),

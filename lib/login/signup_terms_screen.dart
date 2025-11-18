@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/theme/app_colors.dart';
-import 'package:teeklit/theme/app_text.dart';
+import 'package:teeklit_application/ui/core/themes/colors.dart';
+import 'package:teeklit_application/ui/core/themes/app_text.dart';
 
 // 다음 페이지: 이메일 입력
-import 'package:teeklit/login/signup_email.dart';
+import 'package:teeklit_application/login/signup_email.dart';
 
 class SignupTermsScreen extends StatefulWidget {
   SignupTermsScreen({super.key});
@@ -27,8 +27,8 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
         children: [
           Image.asset(
             checked
-                ? 'assets/Images/green_check.png'
-                : 'assets/Images/grey_check.png',
+                ? 'assets/images/green_check.png'
+                : 'assets/images/grey_check.png',
             width: 24,
             height: 24,
           ),
@@ -48,7 +48,7 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2C2C2E),
+      backgroundColor: AppColors.bg,
 
       // ----------------------
       // 상단 AppBar
@@ -56,12 +56,12 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
+        leading: IconButton(//todo: leading icon은 flutter default를 사용하기. 삭제.
           onPressed: () => Navigator.pop(context),
-          icon: Image.asset(
-            'assets/Images/left_line.png',
-            width: 22,
-            height: 22,
+          icon: Icon(
+            Icons.chevron_left,
+            size: 28,
+            color: AppColors.strokeGray, // 앱 컬러
           ),
         ),
       ),
@@ -145,7 +145,7 @@ class _SignupTermsScreenState extends State<SignupTermsScreen> {
             _checkItem(
               "모두 동의하기",
               agreeAll,
-                  () {
+                  () {//todo: 함수 따로 뽑기
                 setState(() {
                   agreeAll = !agreeAll;
                   agree1 = agreeAll;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/theme/app_colors.dart';
-import 'package:teeklit/theme/app_text.dart';
+import 'package:teeklit_application/ui/core/themes/colors.dart';
+import 'package:teeklit_application/ui/core/themes/app_text.dart';
 
 // 회원가입 2단계 화면
-import 'package:teeklit/login/signup_email_verify_screen.dart';
+import 'package:teeklit_application/login/signup_email_verify_screen.dart';
 
 class SignupEmailScreen extends StatelessWidget {
   const SignupEmailScreen({super.key});
@@ -13,18 +13,16 @@ class SignupEmailScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2C2C2E),
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.transparent,// theme로 적용해야함.
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: Image.asset(
-            'assets/Images/left_line.png',
-            width: 24,
-            height: 24,
-            color: Colors.white,          // PNG가 회색이면 앱 스타일에 맞게 흰색 오버레이
-            colorBlendMode: BlendMode.srcIn,
+          icon: Icon(
+            Icons.chevron_left,
+            size: 28,
+            color: AppColors.strokeGray, // 앱 컬러
           ),
         ),
       ),

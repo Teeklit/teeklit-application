@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+import 'package:teeklit_application/ui/core/themes/colors.dart';
 
 class AppText {
   static const String fontFamily = 'Paperlogy';

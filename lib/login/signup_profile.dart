@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/theme/app_colors.dart';
-import 'package:teeklit/theme/app_text.dart';
+import 'package:teeklit_application/ui/core/themes/colors.dart';
+import 'package:teeklit_application/ui/core/themes/app_text.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -10,7 +10,7 @@ class LoginScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: AppColors.Bg,
+      backgroundColor: AppColors.bg,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: size.width * 0.08),
