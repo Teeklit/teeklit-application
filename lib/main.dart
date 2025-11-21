@@ -1,6 +1,7 @@
 // main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:teeklit/ui/community/go_router.dart';
 import 'ui/teekle/widgets/teekle_setting_test.dart';
 import 'ui/teekle/widgets/teekle_setting_test2.dart';
 
@@ -37,9 +38,6 @@ class Teeklit extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       locale: const Locale('ko', 'KR'),
       
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: 'Paperlogy'),
-      home: const HomePage2(),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
