@@ -17,7 +17,7 @@ class Noti {
   }
 
   factory Noti.fromMap(Map<String, dynamic> map) {
-    bool hasNoti = map['hasRepeat'] ?? false;
+    bool hasNoti = map['hasNoti'] ?? false;
 
     if (!hasNoti) {
       return Noti(hasNoti: false);

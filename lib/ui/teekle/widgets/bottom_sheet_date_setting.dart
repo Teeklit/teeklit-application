@@ -43,12 +43,13 @@ class _DateBottomSheetState extends State<DateBottomSheet> {
     date = widget.selectedDate?.toDateOnly() ?? now;
     minimumDate = now;
     maximumDate = DateTime(2030, 12, 31);
+
+    print('DateBottomSheet initState: $date');
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      /// 바텀시트 바깥 터치 시 바텀시트 close 방지
       canPop: false,
       child: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -87,7 +88,6 @@ class _DateBottomSheetState extends State<DateBottomSheet> {
                   mode: CupertinoDatePickerMode.date,
                   use24hFormat: true,
                   onDateTimeChanged: (DateTime newDate) {
-                    // 바텀시트 내부의 상태만 임시로 업데이트합니다.
                     setState(() => date = newDate.toDateOnly());
                   },
                 ),

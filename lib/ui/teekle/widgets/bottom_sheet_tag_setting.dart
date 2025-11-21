@@ -45,15 +45,17 @@ class _TagBottomSheetState extends State<TagBottomSheet> {
   final ScrollController _scrollController = ScrollController();
   bool _showTopGradient = false;
   SettingMode settingMode = SettingMode.select;
-  // 1. 태그 리스트를 부모의 상태 변수로 중앙 관리합니다.
+
+  /// 태그 리스트를 부모의 상태 변수로 중앙 관리합니다.
   List<String> _tags = [];
 
   @override
   void initState() {
     super.initState();
     _selectedTag = widget.initialTag;
+    print('TagBottomSheet initState: $_selectedTag');
+
     _scrollController.addListener(_onScroll);
-    // 전역 리스트를 복사하여 상태를 초기화합니다.
     _tags = List.from(dummyTags);
   }
 
@@ -293,7 +295,7 @@ class TagEdit extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 10.0),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Slidable(
-                ///리스트에 고유 키를 부여 -> 삭제가 되어도 다음 리스트가 삭제된 ListView 상태를 물려받지 안도록 설정
+                /// 리스트에 고유 키를 부여 -> 삭제가 되어도 다음 리스트가 삭제된 ListView 상태를 물려받지 안도록 설정
                 key: ValueKey(tag),
                 endActionPane: ActionPane(
                   motion: const ScrollMotion(),

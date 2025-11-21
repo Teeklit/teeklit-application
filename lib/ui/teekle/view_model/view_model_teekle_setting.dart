@@ -71,7 +71,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
   String? get selectedTag => _selectedTag;
 
   ///=============== 상태 변경 메서드 : setter ===============
-  ///투두/운동 이름 설정
+  /// 투두/운동 이름 설정
   void setTitle(String newTitle) {
     _title = newTitle;
     notifyListeners();
@@ -360,7 +360,9 @@ class TeekleSettingViewModel extends ChangeNotifier {
   }) {
     List<DateTime> dates = [];
 
-    int dayOfMonth = startDate.day; ///특정 날짜 고정
+    int dayOfMonth = startDate.day;
+
+    ///특정 날짜 고정
 
     int currentYear = startDate.year;
     int currentMonth = startDate.month;
@@ -395,6 +397,151 @@ class TeekleSettingViewModel extends ChangeNotifier {
     return dates;
   }
 
+  /// ============ 기존 Task 정보를 받아 ViewModel 초기화 ============
+  /// Teekle 수정 페이지에 진입할 때 호출. teekle과 원본 task 정보를 받아서 UI에 표시
+  void initializeFromTeekle(Teekle teekle, Task originalTask) {
+    print('===== 단계 5: initializeFromTeekle 실행 =====');
+
+    _title = teekle.title;
+    _selectedDate = teekle.execDate;
+    _selectedTag = teekle.tag;
+
+    print('teekle.noti 정보:');
+    print('  hasNoti: ${teekle.noti.hasNoti}');
+    print('  notiTime: ${teekle.noti.notiTime}');
+
+    _hasAlarm = teekle.noti.hasNoti;
+    _selectedAlarmTime = teekle.noti.notiTime ?? DateTime.now();
+
+    print('ViewModel에 설정된 값:');
+    print('  _hasAlarm: $_hasAlarm');
+    print('  _selectedAlarmTime: $_selectedAlarmTime');
+
+    _hasRepeat = originalTask.repeat.hasRepeat;
+    _repeatUnit = originalTask.repeat.unit;
+    _interval = originalTask.repeat.interval;
+    _repeatEndDate = originalTask.endDate;
+    _selectedDaysOfWeek = originalTask.repeat.daysOfWeek;
+
+    print('================================');
+
+    notifyListeners();
+  }
+
+  /// ============ 수정 로직 ============
+  /// Teekle 수정: 선택한 날짜 이후의 teekle 삭제 후 새로운 teekles 생성
+  /// originalTeekle : 수정 전 원본 teekle
+  /// originalTask : 수정 전 원본 task
+  Future<bool> updateTask({
+    required Teekle originalTeekle,
+    required Task originalTask,
+    required String? tag,
+  }) async {
+    notifyListeners();
+
+    try {
+      ///값 변경 먼저 확인
+      bool hasChanged = _hasTaskChanged(originalTask);
+
+      if (!hasChanged) {
+        print('변경된 값이 없습니다. DB 작업 스킵');
+        return true;
+      }
+
+      ///새로운 Task 객체 생성
+      DateTime endDate = _hasRepeat
+          ? (_repeatEndDate ?? _selectedDate)
+          : _selectedDate;
+
+      Task newTask = Task(
+        taskId: uuid.v4(),
+        type: originalTask.type,
+        title: _title,
+        startDate: _selectedDate, /// 실행 날짜를 새로운 시작일로
+        endDate: endDate,
+        repeat: Repeat(
+          hasRepeat: _hasRepeat,
+          unit: _repeatUnit,
+          interval: _interval,
+          daysOfWeek: _selectedDaysOfWeek,
+        ),
+        noti: Noti(
+          hasNoti: _hasAlarm,
+          notiTime: _hasAlarm ? _selectedAlarmTime : null,
+        ),
+        url: null,
+      );
+
+      /// 선택한 날짜 포함 이후의 teekle 삭제 (isDone=false만)
+      await _teekleRepository.deleteTeeklesFromDateByTaskId(
+        taskId: originalTask.taskId,
+        fromDate: _selectedDate,
+      );
+
+      /// 새로운 Task DB 저장
+      await _taskRepository.createTask(newTask);
+
+      /// 새로운 Teekle 생성
+      List<Teekle> newTeekles = _generateTeekles(newTask, tag);
+
+      /// 새로운 Teekles DB 저장
+      if (newTeekles.isNotEmpty) {
+        await _teekleRepository.createTeekles(newTeekles);
+      }
+
+      notifyListeners();
+      return true;
+
+    } catch (e) {
+      print('Task 수정 실패: $e');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// ============ 단일 Teekle 삭제 (수정 페이지 삭제 버튼) ============
+  /// 사용자가 수정 페이지에서 삭제 버튼을 눌렀을 때 해당 날짜의 teekle만 삭제 (다른 날짜의 teekle은 유지)
+  Future<bool> deleteTeekleAtDate(DateTime date) async {
+    notifyListeners();
+
+    try {
+      await _teekleRepository.deleteTeeklesByDate(date);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      print('Teekle 삭제 실패: $e');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// ============ Task 변경 감지 ============
+  /// 수정 전후의 Task값을 비교해 실제로 변경되었는지 검증
+  bool _hasTaskChanged(Task originalTask) {
+    // title, 반복 설정, 알림, 태그 등이 변경되었는지 확인
+    bool titleChanged = _title != originalTask.title;
+    bool repeatChanged =
+        _hasRepeat != originalTask.repeat.hasRepeat ||
+        _repeatUnit != originalTask.repeat.unit ||
+        _interval != originalTask.repeat.interval ||
+        _repeatEndDate != originalTask.endDate ||
+        !_listsEqual(_selectedDaysOfWeek, originalTask.repeat.daysOfWeek);
+    bool alarmChanged = _hasAlarm != originalTask.noti.hasNoti;
+
+    if (!alarmChanged && _hasAlarm && originalTask.noti.hasNoti) {
+      // 둘 다 알림이 켜져 있을 때만 시간 비교
+      alarmChanged = _selectedAlarmTime != originalTask.noti.notiTime;
+    }
+
+    print('alarmChanged: $alarmChanged');
+    print('  hasAlarm: $_hasAlarm vs ${originalTask.noti.hasNoti}');
+    if (_hasAlarm && originalTask.noti.hasNoti) {
+      print('  selectedAlarmTime: $_selectedAlarmTime vs ${originalTask.noti.notiTime}');
+    };
+
+    return titleChanged || repeatChanged || alarmChanged;
+  }
+
   ///============ utils ============
   DateTime _getMonday(DateTime date) {
     int daysToMonday = (date.weekday - 1) % 7;
@@ -410,5 +557,12 @@ class TeekleSettingViewModel extends ChangeNotifier {
   int _getLastDayOfMonth(int year, int month) {
     DateTime nextMonth = DateTime(year, month + 1, 1);
     return nextMonth.subtract(Duration(days: 1)).day;
+  }
+
+  bool _listsEqual<T>(List<T>? list1, List<T>? list2) {
+    if (list1 == null && list2 == null) return true;
+    if (list1 == null || list2 == null) return false;
+    if (list1.length != list2.length) return false;
+    return list1.every((element) => list2.contains(element));
   }
 }

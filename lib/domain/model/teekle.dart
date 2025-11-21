@@ -43,7 +43,7 @@ class Teekle {
     return Teekle(
       teekleId: map['teekleId'],
       taskId: map['taskId'],
-      type: TaskType.values[map['type']],
+      type: TaskType.values.firstWhere((e) => e.name == map['type']),
       execDate: DateTime.parse(map['execDate']),
       title: map['title'],
       tag: map['tag'],

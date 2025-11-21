@@ -70,8 +70,27 @@ class _RepeatBottomSheetState extends State<RepeatBottomSheet> {
     _hasRepeat = widget.initHasRepeat;
     _repeatUnit = widget.initRepeatUnit ?? RepeatUnit.weekly;
     _interval = widget.initInterval ?? 1;
-    _repeatEndDate = widget.initRepeatEndDate ?? DateTime.now().toDateOnly();
-    _selectedDaysOfWeek = List.from(widget.initDaysOfWeek ?? []);
+
+    /// 날짜만 가져오고 그 아래 절삭
+    if (widget.initRepeatEndDate != null) {
+      _repeatEndDate = widget.initRepeatEndDate!.toDateOnly();
+    } else {
+      _repeatEndDate = DateTime.now().toDateOnly();
+    }
+
+    /// null 체크 및 리스트 복사
+    if (widget.initDaysOfWeek != null && widget.initDaysOfWeek!.isNotEmpty) {
+      _selectedDaysOfWeek = List.from(widget.initDaysOfWeek!);
+    } else {
+      _selectedDaysOfWeek = [];
+    }
+
+    // print('RepeatBottomSheet initState:');
+    // print('  hasRepeat: $_hasRepeat');
+    // print('  repeatUnit: $_repeatUnit');
+    // print('  interval: $_interval');
+    // print('  repeatEndDate: $_repeatEndDate');
+    // print('  selectedDaysOfWeek: $_selectedDaysOfWeek');
   }
 
   @override
@@ -339,53 +358,60 @@ class _RepeatBottomSheetState extends State<RepeatBottomSheet> {
                       ),
                     const SizedBox(height: 20),
 
-                    const Text(
-                      '요일 선택',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: List.generate(_daysOfWeekLabels.length, (
-                        index,
-                      ) {
-                        final dayOfWeek = DayOfWeek.values[index];
-                        final isSelected = _selectedDaysOfWeek.contains(
-                          dayOfWeek,
-                        );
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              if (isSelected) {
-                                _selectedDaysOfWeek.remove(dayOfWeek);
-                              } else {
-                                _selectedDaysOfWeek.add(dayOfWeek);
-                              }
-                            });
-                          },
-                          child: CircleAvatar(
-                            radius: 20,
-                            backgroundColor: isSelected
-                                ? AppColors.LightGreen
-                                : AppColors.TxtGrey,
-                            child: Text(
-                              _daysOfWeekLabels[index],
-                              style: TextStyle(
-                                color: isSelected
-                                    ? AppColors.TxtDark
-                                    : Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                              ),
+                    if (_repeatUnit == RepeatUnit.weekly)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '요일 선택',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                        );
-                      }),
-                    ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: List.generate(_daysOfWeekLabels.length, (
+                                index,
+                                ) {
+                              final dayOfWeek = DayOfWeek.values[index];
+                              final isSelected = _selectedDaysOfWeek.contains(
+                                dayOfWeek,
+                              );
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    if (isSelected) {
+                                      _selectedDaysOfWeek.remove(dayOfWeek);
+                                    } else {
+                                      _selectedDaysOfWeek.add(dayOfWeek);
+                                    }
+                                  });
+                                },
+                                child: CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: isSelected
+                                      ? AppColors.LightGreen
+                                      : AppColors.TxtGrey,
+                                  child: Text(
+                                    _daysOfWeekLabels[index],
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? AppColors.TxtDark
+                                          : Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                        ],
+                      ),
+
                     const SizedBox(height: 10),
                   ],
                 ),

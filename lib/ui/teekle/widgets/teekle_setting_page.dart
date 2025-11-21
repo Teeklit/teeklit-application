@@ -7,12 +7,23 @@ import 'package:teeklit/ui/teekle/widgets/bottom_sheet_tag_setting.dart';
 import 'package:teeklit/utils/colors.dart';
 import 'package:intl/intl.dart';
 import 'package:teeklit/domain/model/enums.dart';
+import 'package:teeklit/domain/model/teekle.dart';
+import 'package:teeklit/domain/model/task.dart';
+import 'package:teeklit/data/repositories/repository_task.dart';
 import 'package:provider/provider.dart';
 
 class TeekleSettingPage extends StatefulWidget {
   final TeeklePageType? type;
 
-  const TeekleSettingPage({super.key, required this.type});
+  final Teekle? teekleToEdit;
+  final Task? originalTask;
+
+  const TeekleSettingPage({
+    super.key,
+    required this.type,
+    this.teekleToEdit,
+    this.originalTask,
+  });
 
   @override
   State<TeekleSettingPage> createState() => _TeekleSettingPage();
@@ -22,10 +33,42 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
   final _titleController = TextEditingController();
   late FocusNode _titleFocusNode;
 
+  final _taskRepository = TaskRepository();
+
+  late TeekleSettingViewModel _viewModel;
+
   @override
   void initState() {
     super.initState();
     _titleFocusNode = FocusNode();
+
+    _viewModel = TeekleSettingViewModel();
+
+    /// ============ 수정 페이지일 때 데이터 초기화 ============
+    if (widget.type == TeeklePageType.editTodo ||
+        widget.type == TeeklePageType.editWorkout) {
+      if (widget.teekleToEdit != null && widget.originalTask != null) {
+        // print('teekleToEdit.noti.hasNoti: ${widget.teekleToEdit!.noti.hasNoti}');
+        // print('teekleToEdit.noti.notiTime: ${widget.teekleToEdit!.noti.notiTime}');
+        // print('originalTask.noti.hasNoti: ${widget.originalTask!.noti.hasNoti}');
+        // print('originalTask.noti.notiTime: ${widget.originalTask!.noti.notiTime}');
+        // print('================================');
+
+        // Teekle과 Task 데이터로 ViewModel 초기화
+        _viewModel.initializeFromTeekle(
+          widget.teekleToEdit!,
+          widget.originalTask!,
+        );
+
+        // 제목 컨트롤러에 값 설정
+        _titleController.text = widget.teekleToEdit!.title;
+
+        // print(' ViewModel 초기화 후 ');
+        // print('_viewModel.hasAlarm: ${_viewModel.hasAlarm}');
+        // print('_viewModel.selectedTime: ${_viewModel.selectedTime}');
+        // print('================================');
+      }
+    }
   }
 
   @override
@@ -122,9 +165,8 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      /// 기존: multiprovider 생성 -> 뷰모델 1개로 통합 변경
-      create: (_) => TeekleSettingViewModel(),
+    return ChangeNotifierProvider<TeekleSettingViewModel>.value(
+      value: _viewModel,
       child: Scaffold(
         backgroundColor: AppColors.Bg,
         resizeToAvoidBottomInset: false,
@@ -433,7 +475,21 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () async {
+                              /// 해당 날짜의 teekle만 삭제
+                              bool success = await context
+                                  .read<TeekleSettingViewModel>()
+                                  .deleteTeekleAtDate(
+                                widget.teekleToEdit!.execDate,
+                              );
+
+                              if (success && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('삭제되었습니다')),
+                                );
+                                Navigator.pop(context);
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.WarningRed,
                               padding: EdgeInsets.all(16),
@@ -457,15 +513,41 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
             );
           },
         ),
+
         bottomNavigationBar: Consumer<TeekleSettingViewModel>(
             builder: (context, viewModel, child) {
               return GestureDetector(
-                onTap: () {
-                  if (widget.type == TeeklePageType.addTodo) {
-                    viewModel.saveTask(taskType: TaskType.todo, tag: viewModel.selectedTag);
-                    print('저장 성공. 파이어스토어 체크해보기');
-                  } else if (widget.type == TeeklePageType.addWorkout) {
-                    viewModel.saveTask(taskType: TaskType.todo, tag: viewModel.selectedTag);
+                onTap: () async {
+                  ///추가/수정 분기
+                  if (viewModel.title.isEmpty == false) {
+                    if (widget.type == TeeklePageType.addTodo) {
+                      await viewModel.saveTask(
+                        taskType: TaskType.todo,
+                        tag: viewModel.selectedTag,
+                      );
+                      print('저장 성공. 파이어스토어 체크해보기');
+                      if (mounted) Navigator.pop(context);
+                    } else if (widget.type == TeeklePageType.addWorkout) {
+                      await viewModel.saveTask(
+                        taskType: TaskType.workout,
+                        tag: viewModel.selectedTag,
+                      );
+                      if (mounted) Navigator.pop(context);
+                    } else if (widget.type == TeeklePageType.editTodo ||
+                        widget.type == TeeklePageType.editWorkout) {
+                      bool success = await viewModel.updateTask(
+                        originalTeekle: widget.teekleToEdit!,
+                        originalTask: widget.originalTask!,
+                        tag: viewModel.selectedTag,
+                      );
+
+                      if (success && mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('수정되었습니다')),
+                        );
+                        Navigator.pop(context);
+                      }
+                    }
                   }
                 },
                 child: Container(

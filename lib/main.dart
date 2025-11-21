@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'ui/teekle/widgets/teekle_setting_test.dart';
+import 'ui/teekle/widgets/teekle_setting_test2.dart';
 
 
 //파이어베이스
@@ -32,7 +33,7 @@ class Teeklit extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Paperlogy'),
-      home: const HomePage(),
+      home: const HomePage2(),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
