@@ -33,9 +33,20 @@ dependencies:
   go_router: ^15.1.2 # add in 25.11.17
   image_picker: 1.1.2
 
+  flutter_localizations:
+    sdk: flutter
+  table_calendar: ^3.2.0
+  intl: any
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  flutter_slidable: ^4.0.3
+  provider: ^6.1.5+1
+  uuid: ^4.4.2
+  firebase_core: ^4.2.1
+  #filename:pubspec.yaml
+  firebase_auth: ^6.0.0
+  cloud_firestore: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -60,8 +71,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-    # - assets/
+  assets:
+     - assets/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -78,7 +89,7 @@ flutter:
   fonts:
     - family: Paperlogy
       fonts:
-        - asset:  fonts/Paperlogy-1Thin.ttf
+        - asset: fonts/Paperlogy-1Thin.ttf
           weight: 100
         - asset: fonts/Paperlogy-2ExtraLight.ttf
           weight: 200
