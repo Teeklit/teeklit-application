@@ -37,18 +37,18 @@ class CommunityViewModel extends ChangeNotifier {
     // -> repo에서 리스트 in으로 반복해서 저장경로 갖고있는 리스트 반환
     // -> 여기서 받아서 post에 추가한 후 다시 게시글 저장하는 repo 코드로 보내줌
 
-    final Posts newPost = Posts(postTitle: postTitle,
-      postContents:
-      postContents,
+    final Posts newPost = Posts(
+      postTitle: postTitle,
+      postContents: postContents,
       category: switch (category){
-        '티클' => PostCategory.teekle,
-        '자유게시판' => PostCategory.free,
-        '정보' => PostCategory.info,
+        '티클' => PostCategory.teekle.value,
+        '자유게시판' => PostCategory.free.value,
+        '정보' => PostCategory.info.value,
         _ => throw UnimplementedError(),
       },
       createAt: DateTime.now(),
       userId: 'sdfa',
-      imgUrls: _repo.saveImages(images),
+      imgUrls: await _repo.saveImages(images),
     );
 
     await _repo.addPost(newPost);

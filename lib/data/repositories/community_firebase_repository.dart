@@ -17,7 +17,7 @@ class CommunityFirebaseRepository {
   }
 
   /// 이미지 저장 TODO 구현 예정, 이거 자체를 repo로 보내기?
-  List<String>? saveImages(List<XFile>? images) {
+  Future<List<String>?> saveImages(List<XFile>? images) async {
 
     if(images == null){
       return null;
@@ -30,9 +30,9 @@ class CommunityFirebaseRepository {
     // XFile -> File 변환
     for(XFile i in images){
       File image = File(i.path);
-      String fileName = i.name;
+      String imageName = i.name;
 
-      _communityService.saveImage(image, fileName);
+      String fileName = await _communityService.saveImage(image, imageName);
 
       pathList.add(storagePath + fileName);
     }

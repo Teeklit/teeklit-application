@@ -27,6 +27,7 @@ class WriteCustomTextFormField extends StatelessWidget {
     final bool isTitle = fieldType == InputFieldType.title;
 
     return TextFormField(
+      controller: controller,
       style: TextStyle(color: AppColors.txtLight),
       cursorColor: AppColors.txtLight,
       maxLines: maxLines,

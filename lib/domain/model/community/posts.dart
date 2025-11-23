@@ -16,7 +16,7 @@ class Posts {
   final String? postId; // 게시글 식별값
   final String postTitle; // 게시글 제목
   final String postContents; // 게시글 내용
-  final PostCategory category; // 게시글 카테고리
+  final String category; // 게시글 카테고리
   final int postView; // 조회수
   final List<String>? imgUrls; // 이미지 링크들
   final String? teekleId; // 티클 ID
