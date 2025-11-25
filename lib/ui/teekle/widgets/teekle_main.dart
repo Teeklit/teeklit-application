@@ -2,11 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:teeklit/data/repositories/repository_task.dart';
 import 'package:teeklit/data/repositories/repository_teekle.dart';
 import 'package:teeklit/domain/model/enums.dart';
 import 'package:teeklit/domain/model/teekle.dart';
+import 'package:teeklit/ui/teekle/providers/teekle_stats_provider.dart';
 import 'package:teeklit/ui/teekle/widgets/teekle_setting_page.dart';
 import '../../core/themes/colors.dart';
 import 'teekle_list_item.dart';
@@ -44,6 +46,35 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
   void _refreshSelectedDayFromMap() {
     final key = _normalizeDate(selectedDay);
     _teeklesForDay = _teeklesByDay[key] ?? [];
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<TeekleStatsProvider>().updateTeeklesForDay(_teeklesForDay);
+      }
+    });
+  }
+
+  int _calculateStreakDays() {
+    DateTime cursor = _normalizeDate(DateTime.now());
+    int streak = 0;
+
+    while (true) {
+      final key = _normalizeDate(cursor);
+      final list = _teeklesByDay[key] ?? [];
+
+      // 1) 그날 티클이 아예 없으면 streak 종료
+      if (list.isEmpty) break;
+
+      // 2) 그날 티클이 모두 완료되어야 "성공한 하루"로 인정
+      final allDone = list.isNotEmpty && list.every((t) => t.isDone == true);
+      if (!allDone) break;
+
+      // 3) 성공한 하루 → streak 증가, 하루 전으로 이동
+      streak++;
+      cursor = cursor.subtract(const Duration(days: 1));
+    }
+
+    return streak;
   }
 
   Future<void> _loadTeeklesForMonth(DateTime month) async {
@@ -65,6 +96,13 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
 
       // 현재 선택된 날짜의 리스트 갱신
       _refreshSelectedDayFromMap();
+
+      final streak = _calculateStreakDays();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<TeekleStatsProvider>().updateStreakDays(streak);
+        }
+      });
     } catch (e) {
       _errorMessage = '티클 불러오기 실패: $e';
     } finally {
@@ -73,7 +111,6 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
       });
     }
   }
-
 
   Future<void> _loadRandomCandidates() async {
     setState(() {
@@ -475,7 +512,7 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
                           focusedDay = newFocusedDay;
                         });
                         _loadTeeklesForMonth(newFocusedDay);
-                      }
+                      },
                     ),
 
                   teeklesForDayNotDone.isEmpty
@@ -511,7 +548,9 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
 
                             return GestureDetector(
                               onTap: () async {
-                                final task = await _taskRepository.getTask(teekle.taskId);
+                                final task = await _taskRepository.getTask(
+                                  teekle.taskId,
+                                );
 
                                 final result = await Navigator.push(
                                   context,
