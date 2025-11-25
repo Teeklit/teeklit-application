@@ -73,7 +73,7 @@ class PublicDataSourceScreen extends StatelessWidget {
                   _InfoItem(
                     label: '자세히 보기',
                     value:
-                    'https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15085751',
+                    'https://www.data.go.kr/data/15084814/fileData.do',
                   ),
                 ],
               ),
