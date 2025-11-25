@@ -107,7 +107,7 @@ class OnboardingPage1 extends StatelessWidget {
       children: [
         /// 이미지 (위쪽 고정)
         Positioned(
-          top: 170,
+          top: MediaQuery.of(context).size.height * 0.20,
           left: 0,
           right: 0,
           child: Container(
@@ -115,10 +115,10 @@ class OnboardingPage1 extends StatelessWidget {
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF97A985).withOpacity(0.3),
+                  color: const Color(0xFF97A985).withOpacity(0.2),
                   offset: const Offset(0, 2),
                   blurRadius: 70,
-                  spreadRadius: 4,
+                  spreadRadius: 3,
                 ),
               ],
             ),

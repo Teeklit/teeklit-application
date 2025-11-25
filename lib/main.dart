@@ -6,6 +6,7 @@ import 'login/app_router.dart';
 import 'ui/teekle/widgets/teekle_setting_test.dart';
 import 'ui/teekle/widgets/teekle_setting_test2.dart';
 import 'package:teeklit/login/app_router.dart';
+import 'package:flutter/services.dart';
 
 //파이어베이스
 import 'package:firebase_core/firebase_core.dart';
@@ -19,6 +20,19 @@ void main() async{
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // 🔥 세로 고정
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  FirebaseFirestore.instance.collection('test').get().then((snapshot) {
+    print('🔥 Firestore 연결 성공! 문서 개수: ${snapshot.docs.length}');
+  }).catchError((e) {
+    print('🔥 Firestore 연결 실패: $e');
+  });
+
+
   FirebaseFirestore.instance.collection('test').get().then((snapshot) {
     print('🔥 Firestore 연결 성공! 문서 개수: ${snapshot.docs.length}');
   }).catchError((e) {
@@ -27,6 +41,7 @@ void main() async{
 
   runApp(const Teeklit());
 }
+
 
 class Teeklit extends StatelessWidget {
   const Teeklit({super.key});
