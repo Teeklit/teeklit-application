@@ -12,6 +12,7 @@ class Task {
   final Repeat repeat;
   final Noti noti;
   final String? url;
+  final String userId;
 
   Task({
     required this.taskId,
@@ -22,6 +23,7 @@ class Task {
     required this.repeat,
     required this.noti,
     this.url,
+    required this.userId,
   });
 
   Map<String, dynamic> toMap() {
@@ -34,6 +36,7 @@ class Task {
       'repeat' : repeat.toMap(),
       'noti' : noti.toMap(),
       'url' : url,
+      'userId' : userId,
     };
   }
 
@@ -47,6 +50,7 @@ class Task {
       repeat: Repeat.fromMap(map['repeat']),
       noti: Noti.fromMap(map['noti']),
       url : map['url'],
+      userId : map['userId'],
     );
   }
 }

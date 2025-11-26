@@ -180,6 +180,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
           notiTime: _hasAlarm ? _selectedAlarmTime : null,
         ),
         url: null,
+        userId: 'test2',
       );
 
       /// Task를 Repository를 통해 DB에 저장
@@ -470,6 +471,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
           notiTime: _hasAlarm ? _selectedAlarmTime : null,
         ),
         url: null,
+        userId: 'test2',
       );
 
       /// 선택한 날짜 포함 이후의 teekle 삭제 (isDone=false만)

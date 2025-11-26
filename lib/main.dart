@@ -1,10 +1,14 @@
 // main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:teeklit/login/app_router.dart';
 import 'package:teeklit/login/login_screen.dart';
 import 'package:teeklit/onboarding/onboarding_screen.dart';
-import 'package:teeklit/ui/community/go_router.dart';
+import 'package:teeklit/routing/go_router.dart';
+import 'package:teeklit/ui/community/view_model/community_view_model.dart';
+import 'package:teeklit/ui/community/view_model/report_view_model.dart';
 import 'package:teeklit/ui/teekle/providers/teekle_stats_provider.dart';
 import 'ui/core/providers/user_provider.dart';
 import 'ui/teekle/widgets/teekle_main.dart';
@@ -48,6 +52,8 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => TeekleStatsProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => CommunityViewModel()),
+        ChangeNotifierProvider(create: (_) => ReportViewModel()),
       ],
       child: const Teeklit(),
     ),
@@ -61,9 +67,22 @@ class Teeklit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      routerConfig: appRouter,
+      routerConfig: router,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Paperlogy'),
+      locale: const Locale('ko', 'KR'),
+
+      supportedLocales: const [
+        Locale('ko', 'KR'),
+        Locale('en', 'US'),
+      ],
+
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+
     );
   }
 }
