@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/config/colors.dart';
+import 'package:teeklit/ui/core/themes/colors.dart';
 
 /// 커스텀 입력 필드를 구분하기 위해 사용
 enum InputFieldType { title, content }
@@ -27,19 +27,20 @@ class WriteCustomTextFormField extends StatelessWidget {
     final bool isTitle = fieldType == InputFieldType.title;
 
     return TextFormField(
-      style: TextStyle(color: AppColors.TxtLight),
-      cursorColor: AppColors.TxtLight,
+      controller: controller,
+      style: TextStyle(color: AppColors.txtLight),
+      cursorColor: AppColors.txtLight,
       maxLines: maxLines,
       decoration: InputDecoration(
         hint: hintText,
         enabledBorder: isTitle
             ? UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.StrokeGrey),
+          borderSide: BorderSide(color: AppColors.strokeGray),
         )
             : InputBorder.none,
         focusedBorder: isTitle
             ? UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.StrokeGrey),
+          borderSide: BorderSide(color: AppColors.strokeGray),
         )
             : InputBorder.none,
         border: !isTitle ? InputBorder.none : null,

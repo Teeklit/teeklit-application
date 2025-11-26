@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/config/colors.dart';
+import 'package:provider/provider.dart';
+import 'package:teeklit/domain/model/community/posts.dart';
+import 'package:teeklit/ui/community/view_model/community_view_model.dart';
+import 'package:teeklit/ui/core/themes/colors.dart';
 
 /// 커뮤니티 게시판의 카테고리 토글 버튼
 class MainCategoryToggleButtons extends StatefulWidget {
@@ -30,10 +33,10 @@ class _MainCategoryToggleButtonsState extends State<MainCategoryToggleButtons> {
 
   @override
   Widget build(BuildContext context) {
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final double height = constraints.maxHeight;
-        final String specificText = '인기';
 
         final List<Widget> buttonList = [];
 
@@ -45,8 +48,8 @@ class _MainCategoryToggleButtonsState extends State<MainCategoryToggleButtons> {
             Container(
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.Green
-                    : AppColors.RoundboxDarkBg,
+                    ? AppColors.green
+                    : AppColors.roundboxDarkBg,
                 borderRadius: BorderRadius.circular(25),
               ),
 
@@ -71,10 +74,10 @@ class _MainCategoryToggleButtonsState extends State<MainCategoryToggleButtons> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (category == specificText) ...[
+                        if (category == PostCategory.popular.value) ...[
                           Icon(
                             Icons.local_fire_department,
-                            color: AppColors.WarningRed,
+                            color: AppColors.warningRed,
                             size: 16,
                           ),
                           const SizedBox(width: 4),
@@ -83,7 +86,7 @@ class _MainCategoryToggleButtonsState extends State<MainCategoryToggleButtons> {
                           category,
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            color: isSelected ? AppColors.Ivory : AppColors.TxtLight,
+                            color: isSelected ? AppColors.ivory : AppColors.txtLight,
                             fontSize: 12,
                           ),
                         ),
@@ -95,12 +98,12 @@ class _MainCategoryToggleButtonsState extends State<MainCategoryToggleButtons> {
             ),
           );
 
-          if (category == specificText && i < widget.categories.length - 1) {
+          if (category == PostCategory.popular.value && i < widget.categories.length - 1) {
             buttonList.add(
               Container(
                 width: 1.5,
                 height: height * 0.5,
-                color: AppColors.StrokeGrey,
+                color: AppColors.strokeGray,
               ),
             );
           }

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:teeklit/config/colors.dart';
+import 'package:provider/provider.dart';
+import 'package:teeklit/ui/community/view_model/community_view_model.dart';
+import 'package:teeklit/ui/core/themes/colors.dart';
 import 'package:teeklit/ui/community/widgets/post_view_page/view_bookmark_toggle_button.dart';
 
 class ViewHeaderButtonsSection extends StatelessWidget {
+  final String category;
+
   /// 게시글 상세보기 페이지의 상단에서 버튼이 있는 section
-  const ViewHeaderButtonsSection({super.key});
+  const ViewHeaderButtonsSection({super.key, required this.category});
 
   @override
   Widget build(BuildContext context) {
@@ -13,9 +17,9 @@ class ViewHeaderButtonsSection extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         TextButton(
-          onPressed: () {GoRouter.of(context).goNamed('communityMain');},
+          onPressed: () {context.goNamed('communityMain');},
           style: TextButton.styleFrom(
-            backgroundColor: AppColors.DarkGreen,
+            backgroundColor: AppColors.darkGreen,
             minimumSize: Size(0, 0),
           ),
           child: Padding(
@@ -23,9 +27,9 @@ class ViewHeaderButtonsSection extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  '자유게시판',
+                  category,
                   style: TextStyle(
-                    color: AppColors.Ivory,
+                    color: AppColors.ivory,
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
@@ -33,13 +37,14 @@ class ViewHeaderButtonsSection extends StatelessWidget {
                 Icon(
                   Icons.chevron_right,
                   size: 10,
-                  color: AppColors.Ivory,
+                  color: AppColors.ivory,
                 ),
               ],
             ),
           ),
         ),
-        ViewBookmarkToggleButton(),
+        /// TODO 북마크 아직 안함
+        // ViewBookmarkToggleButton(),
       ],
     );
   }

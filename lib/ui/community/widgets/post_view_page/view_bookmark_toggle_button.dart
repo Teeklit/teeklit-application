@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/config/colors.dart';
+import 'package:teeklit/ui/core/themes/colors.dart';
 
 /// Icon을 누르면 색이 바뀌는 토글 버튼
 class ViewBookmarkToggleButton extends StatefulWidget {
@@ -25,7 +25,7 @@ class _ViewBookmarkToggleButtonState extends State<ViewBookmarkToggleButton> {
       icon: Icon(
         Icons.bookmark,
         size: 24,
-        color: isSelected ? AppColors.DarkGreen : AppColors.Ivory,
+        color: isSelected ? AppColors.darkGreen : AppColors.ivory,
       ),
 
       splashColor: Colors.transparent,

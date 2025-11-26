@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:teeklit/config/colors.dart';
+import 'package:teeklit/domain/model/community/report.dart';
+import 'package:teeklit/ui/core/themes/colors.dart';
 import 'package:teeklit/ui/community/widgets/community_custom_buttons.dart';
 
 class ViewAppBar extends StatefulWidget implements PreferredSizeWidget {
-  const ViewAppBar({super.key});
+  final Future<void> Function() blockUser;
+  final Future<bool> Function(String, String, String) reportPost;
+  final Future<void> Function() hidePost;
+  final String postId;
+  final String myId;
+  final bool isAdmin;
+
+  const ViewAppBar({
+    super.key,
+    required this.blockUser,
+    required this.reportPost,
+    required this.postId,
+    required this.myId,
+    required this.isAdmin,
+    required this.hidePost,
+  });
 
   @override
   State<ViewAppBar> createState() => _ViewAppBarState();
@@ -22,7 +38,7 @@ class _ViewAppBarState extends State<ViewAppBar> {
           top: Radius.circular(25),
         ),
       ),
-      backgroundColor: AppColors.Bg,
+      backgroundColor: AppColors.bg,
       builder: (context) {
         return Padding(
           padding: const EdgeInsets.all(20.0),
@@ -33,7 +49,7 @@ class _ViewAppBarState extends State<ViewAppBar> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.TxtGrey,
+                    color: AppColors.txtGray,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   margin: EdgeInsets.only(top: 5),
@@ -42,17 +58,24 @@ class _ViewAppBarState extends State<ViewAppBar> {
                     buttonText: Text(
                       '신고',
                       style: TextStyle(
-                        color: AppColors.Ivory,
+                        color: AppColors.ivory,
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
                       ),
                     ),
-                    callback: () {},
+                    callback: () async{
+                      await widget.reportPost(
+                        widget.postId,
+                        TargetType.post.value, // TODO id 변경
+                        widget.myId,
+                      );
+                      Navigator.pop(context);
+                    },
                   ),
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.TxtGrey,
+                    color: AppColors.txtGray,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   margin: EdgeInsets.only(top: 5),
@@ -61,18 +84,55 @@ class _ViewAppBarState extends State<ViewAppBar> {
                     buttonText: Text(
                       '차단',
                       style: TextStyle(
-                        color: AppColors.Ivory,
+                        color: AppColors.ivory,
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
                       ),
                     ),
-                    callback: () {},
+                    callback: () async {
+                      await widget.blockUser();
+                      Navigator.pop(context);
+
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        context.go('/community/');
+                      });
+                    },
                   ),
                 ),
-                SizedBox(height: 15,),
+                if(widget.isAdmin)...[
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.txtGray,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    margin: EdgeInsets.only(top: 5),
+                    width: double.infinity,
+                    child: CustomTextButton(
+                      buttonText: Text(
+                        '숨기기',
+                        style: TextStyle(
+                          color: AppColors.ivory,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                        ),
+                      ),
+                      callback: () async {
+                        await widget.hidePost();
+                        Navigator.pop(context);
+
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          context.go('/community/');
+                        });
+                      },
+                    ),
+                  ),
+                ],
+                SizedBox(
+                  height: 15,
+                ),
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.WarningRed,
+                    color: AppColors.warningRed,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   margin: EdgeInsets.only(top: 5),
@@ -81,7 +141,7 @@ class _ViewAppBarState extends State<ViewAppBar> {
                     buttonText: Text(
                       '취소',
                       style: TextStyle(
-                        color: AppColors.Ivory,
+                        color: AppColors.ivory,
                         fontWeight: FontWeight.w500,
                         fontSize: 14,
                       ),
@@ -100,24 +160,24 @@ class _ViewAppBarState extends State<ViewAppBar> {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: AppColors.Bg,
+      backgroundColor: AppColors.bg,
       leading: IconButton(
         onPressed: () {
-          GoRouter.of(context).pop();
+          context.go('/community/');
         },
-        icon: Icon(Icons.chevron_left, color: AppColors.TxtGrey),
+        icon: Icon(Icons.chevron_left, color: AppColors.txtGray),
       ),
       actions: [
         CustomIconButton(
           buttonIcon: Icon(
             Icons.more_vert,
             size: 24,
-            color: AppColors.TxtGrey,
+            color: AppColors.txtGray,
           ),
           callback: _openModal,
         ),
       ],
-      shape: Border(bottom: BorderSide(color: AppColors.TxtLight, width: 0.5)),
+      shape: Border(bottom: BorderSide(color: AppColors.txtLight, width: 0.5)),
     );
   }
 }

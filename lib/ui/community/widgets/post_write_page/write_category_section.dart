@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/config/colors.dart';
+import 'package:teeklit/domain/model/community/posts.dart';
+import 'package:teeklit/ui/core/themes/colors.dart';
 
 /// 글쓰기 페이지 카테고리
 class PostCategorySection extends StatefulWidget {
@@ -21,12 +22,12 @@ class _PostCategorySectionState extends State<PostCategorySection> {
           top: Radius.circular(25),
         ),
       ),
-      backgroundColor: AppColors.Bg,
+      backgroundColor: AppColors.bg,
       builder: (context) {
         final List<String> categoryList = [
-          '티클',
-          '자유게시판',
-          '정보',
+          PostCategory.free.value,
+          PostCategory.teekle.value,
+          PostCategory.info.value,
         ];
         return Padding(
           padding: const EdgeInsets.all(15.0),
@@ -37,7 +38,7 @@ class _PostCategorySectionState extends State<PostCategorySection> {
               children: [
                 AppBar(
                   automaticallyImplyLeading: false,
-                  backgroundColor: AppColors.Bg,
+                  backgroundColor: AppColors.bg,
                   flexibleSpace: ClipRRect(
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(25),
@@ -47,7 +48,7 @@ class _PostCategorySectionState extends State<PostCategorySection> {
                   title: Text(
                     '카테고리',
                     style: TextStyle(
-                      color: AppColors.TxtLight,
+                      color: AppColors.txtLight,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -68,11 +69,11 @@ class _PostCategorySectionState extends State<PostCategorySection> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadiusGeometry.circular(25),
                             ),
-                            tileColor: AppColors.RoundboxDarkBg,
+                            tileColor: AppColors.roundboxDarkBg,
                             title: Text(
                               category,
                               style: TextStyle(
-                                color: AppColors.TxtLight,
+                                color: AppColors.txtLight,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -102,21 +103,21 @@ class _PostCategorySectionState extends State<PostCategorySection> {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      style: TextStyle(color: AppColors.TxtLight),
+      style: TextStyle(color: AppColors.txtLight),
       readOnly: true,
       controller: widget.controller,
       decoration: InputDecoration(
         hintText: '주제 선택',
         hintStyle: TextStyle(
-          color: AppColors.TxtLight,
+          color: AppColors.txtLight,
           fontWeight: FontWeight.w500,
           fontSize: 14,
         ),
         enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.StrokeGrey),
+          borderSide: BorderSide(color: AppColors.strokeGray),
         ),
         focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.StrokeGrey),
+          borderSide: BorderSide(color: AppColors.strokeGray),
         ),
         suffixIcon: Icon(Icons.chevron_right),
       ),

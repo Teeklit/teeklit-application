@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/config/colors.dart';
+import 'package:teeklit/domain/model/community/comments.dart';
+import 'package:teeklit/ui/core/themes/colors.dart';
 
 /// 상세보기 댓글 정렬 토글 버튼
 class ViewCommentSortToggleButtons extends StatefulWidget {
-  /// 댓글 시간 순 정렬하는 버튼 TODO 댓글 정렬 기능 구현
-  const ViewCommentSortToggleButtons({super.key});
+  final void Function(String) sortFunction;
+
+  const ViewCommentSortToggleButtons({super.key, required this.sortFunction});
 
   @override
   State<ViewCommentSortToggleButtons> createState() => _ViewCommentSortToggleButtonsState();
 }
 
 class _ViewCommentSortToggleButtonsState extends State<ViewCommentSortToggleButtons> {
-  final List<String> options = ['과거순', '최신순'];
-  String selected = '최신순';
+  final List<String> options = [SortStandard.old.value, SortStandard.recent.value];
+  String selected = SortStandard.old.value;
 
   @override
   Widget build(BuildContext context) {
@@ -25,11 +27,11 @@ class _ViewCommentSortToggleButtonsState extends State<ViewCommentSortToggleButt
           style: TextButton.styleFrom(
             minimumSize: Size(0, 0),
             backgroundColor: isSelected
-                ? AppColors.DarkGreen
-                : AppColors.RoundboxDarkBg,
+                ? AppColors.darkGreen
+                : AppColors.roundboxDarkBg,
             foregroundColor: isSelected
-                ? AppColors.Ivory
-                : AppColors.InactiveTxtGrey,
+                ? AppColors.ivory
+                : AppColors.inactiveTxtGray,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(25),
               side: BorderSide.none,
@@ -40,6 +42,7 @@ class _ViewCommentSortToggleButtonsState extends State<ViewCommentSortToggleButt
           onPressed: () {
             setState(() {
               selected = item;
+              widget.sortFunction(item);
             });
           },
           child: Text(

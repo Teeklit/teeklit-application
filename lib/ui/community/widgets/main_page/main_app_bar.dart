@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/config/colors.dart';
+import 'package:teeklit/ui/core/themes/colors.dart';
 import 'package:teeklit/ui/community/widgets/community_custom_buttons.dart';
 
 class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -7,13 +7,12 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO Sliver 공부해보기
     return AppBar(
-      backgroundColor: AppColors.Bg,
+      backgroundColor: AppColors.bg,
       title: Text(
         '커뮤니티',
         style: TextStyle(
-          color: AppColors.TxtLight,
+          color: AppColors.txtLight,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -22,7 +21,7 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
           buttonIcon: Icon(
             Icons.notifications_none,
             size: 24,
-            color: AppColors.Ivory,
+            color: AppColors.ivory,
           ),
           callback: () {},
         ),

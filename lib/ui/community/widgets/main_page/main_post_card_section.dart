@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:teeklit/config/colors.dart';
+import 'package:provider/provider.dart';
+import 'package:teeklit/domain/model/community/posts.dart';
+import 'package:teeklit/ui/community/view_model/community_view_model.dart';
+import 'package:teeklit/ui/core/themes/colors.dart';
 
 /// 게시글 리스트에 출력되는 게시글 정보들.
 ///
@@ -12,24 +15,28 @@ import 'package:teeklit/config/colors.dart';
 /// commentCount: int
 /// }]
 class PostCard extends StatelessWidget {
-  final Map<String, dynamic> postInfo;
+  final Posts postInfo;
 
-  const PostCard({super.key, required this.postInfo});
+  const PostCard({super.key, required this.postInfo,});
 
   @override
   Widget build(BuildContext context) {
-    final String postTitle = postInfo['postTitle'];
-    final String postContents = postInfo['postContents'];
-    final String picUrl = postInfo['picUrl'];
-    final String category = postInfo['category'];
-    final int commentCount = postInfo['commentCount'];
+    final String? postId = postInfo.postId;
+    final String postTitle = postInfo.postTitle;
+    final String postContents = postInfo.postContents;
+    final List<String>? imgUrls = postInfo.imgUrls;
+    final String category = postInfo.category;
+    final bool hasImage = imgUrls!.isNotEmpty; // 이미지가 있으면 true
 
     return GestureDetector(
-      onTap: (){GoRouter.of(context).push('/community/view');},
+      onTap: () async {
+        await context.read<CommunityViewModel>().selectedPost(postId!);
+        context.go('/community/view');
+      },
       child: Container(
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: AppColors.RoundboxDarkBg,
+          color: AppColors.roundboxDarkBg,
           borderRadius: BorderRadius.circular(12),
         ),
 
@@ -40,7 +47,7 @@ class PostCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  flex: picUrl != 'null' ? 8 : 10,
+                  flex: hasImage ? 8 : 10,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -55,14 +62,11 @@ class PostCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (picUrl != 'null')
-                  Expanded(flex: 2, child: PictureSection(picUrl: picUrl)),
+                if (hasImage)
+                  Expanded(flex: 2, child: PictureSection(imgUrls: imgUrls)),
               ],
             ),
             Divider(
-              // 야매로 한거임
-              // sizedbox(고정값) 주기 싫었음
-              // height 3도 하드코딩이긴한데
               height: 5,
               color: Colors.transparent,
             ),
@@ -70,7 +74,7 @@ class PostCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 CategoryBox(category: category,),
-                CommentCount(commentCount: commentCount,),
+                CommentCount(commentCount: 3, postId: postId,),
               ],
             ),
           ],
@@ -94,7 +98,7 @@ class PostTitle extends StatelessWidget {
     return Text(
       postTitle,
       style: TextStyle(
-        color: AppColors.TxtLight,
+        color: AppColors.txtLight,
         fontWeight: FontWeight.w600,
         fontSize: 14,
       ),
@@ -118,7 +122,7 @@ class PostContents extends StatelessWidget {
     return Text(
       postContents,
       style: TextStyle(
-        color: AppColors.TxtGrey,
+        color: AppColors.txtGray,
         fontSize: 13,
         fontWeight: FontWeight.w400
       ),
@@ -130,9 +134,9 @@ class PostContents extends StatelessWidget {
 
 /// 사진 url을 받아서 출력함.
 class PictureSection extends StatelessWidget {
-  final String picUrl;
+  final List<String>? imgUrls;
 
-  const PictureSection({super.key, required this.picUrl});
+  const PictureSection({super.key, required this.imgUrls});
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +144,7 @@ class PictureSection extends StatelessWidget {
       aspectRatio: 1,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
-        child: Image.network(picUrl, fit: BoxFit.cover),
+        child: Image.network(imgUrls![0], fit: BoxFit.cover),
       ),
     );
   }
@@ -158,10 +162,10 @@ class CategoryBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color setColor = switch (category) {
-      '자유게시판' => AppColors.Orange,
-      '티클' => AppColors.Green,
-      '정보' => AppColors.Blue,
-      _ => AppColors.WarningRed,
+      '자유게시판' => AppColors.orange,
+      '티클' => AppColors.green,
+      '정보' => AppColors.blue,
+      _ => AppColors.warningRed,
     };
 
     return Container(
@@ -176,7 +180,7 @@ class CategoryBox extends StatelessWidget {
         category,
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: AppColors.TxtGrey,
+          color: AppColors.txtGray,
           fontWeight: FontWeight.w600,
           fontSize: 10,
         ),
@@ -188,26 +192,36 @@ class CategoryBox extends StatelessWidget {
 /// 댓글 갯수 출력
 class CommentCount extends StatelessWidget {
   final int commentCount;
+  final String? postId;
 
   const CommentCount({
     super.key,
-    required this.commentCount,
+    required this.commentCount, this.postId,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(Icons.forum, color: AppColors.Ivory, size: 12),
-        Text(
-          '$commentCount',
-          style: TextStyle(
-            color: AppColors.TxtGrey,
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
+
+    return FutureBuilder<int>( // TODO AI 사용해서 급조. 나중에 제대로 공부하겠음
+      future: context.read<CommunityViewModel>().responseCommentCount(postId!),
+      builder: (context, snapshot) {
+        
+        final loadedCount = snapshot.data ?? 0;
+
+        return Row(
+          children: [
+            Icon(Icons.forum, color: AppColors.ivory, size: 12),
+            Text(
+              '$loadedCount',
+              style: TextStyle(
+                color: AppColors.txtGray,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:teeklit/config/colors.dart';
+import 'package:teeklit/ui/core/themes/colors.dart';
 
 class ViewHeaderPostInfoSection extends StatelessWidget {
-  
+  final String title;
+  final String? imgUrl;
+  final String nickName;
+  final DateTime time;
+
   /// 게시글 상세보기 페이지의 상단에서 게시글 정보를 포함하는 section
   /// * 제목
   /// * 작성자
   /// * 작성 시간
-  const ViewHeaderPostInfoSection({super.key});
+  const ViewHeaderPostInfoSection({
+    super.key,
+    required this.title,
+    required this.imgUrl,
+    required this.nickName,
+    required this.time,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,9 +28,9 @@ class ViewHeaderPostInfoSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 5),
           child: Text(
-            '집에서 안나가면 배달 시켜 드시나요?',
+            title,
             style: TextStyle(
-              color: AppColors.TxtLight,
+              color: AppColors.txtLight,
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -41,16 +51,16 @@ class ViewHeaderPostInfoSection extends StatelessWidget {
                   aspectRatio: 1,
                   child: CircleAvatar(
                     backgroundImage: NetworkImage(
-                      'https://cdn.epnnews.com/news/photo/202008/5216_6301_1640.jpg',
+                      imgUrl ?? 'https://cdn.epnnews.com/news/photo/202008/5216_6301_1640.jpg',
                     ),
                   ),
                 ),
               ),
               Expanded(
                 child: Text(
-                  '관악구치킨왕',
+                  nickName,
                   style: TextStyle(
-                    color: AppColors.TxtLight,
+                    color: AppColors.txtLight,
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
                   ),
@@ -61,12 +71,12 @@ class ViewHeaderPostInfoSection extends StatelessWidget {
                   Icon(
                     Icons.access_time,
                     size: 14,
-                    color: AppColors.TxtLight,
+                    color: AppColors.txtLight,
                   ),
                   Text(
-                    '2025.11.11',
+                    time.toString(),
                     style: TextStyle(
-                      color: AppColors.TxtLight,
+                      color: AppColors.txtLight,
                       fontSize: 10,
                       fontWeight: FontWeight.w300,
                     ),

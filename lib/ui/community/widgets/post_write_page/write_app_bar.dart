@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:teeklit/config/colors.dart';
+import 'package:teeklit/ui/core/themes/colors.dart';
 
 /// 커뮤니티 글쓰기 Appbar
 class WriteAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -12,13 +12,15 @@ class WriteAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: AppColors.Bg,
+      backgroundColor: AppColors.bg,
       leading: IconButton(
-        onPressed: () {GoRouter.of(context).pop();},
-        icon: Icon(Icons.chevron_left, color: AppColors.TxtGrey),
+        onPressed: () {
+          context.go('/community/');
+        },
+        icon: Icon(Icons.chevron_left, color: AppColors.txtGray),
       ),
       actions: actions,
-      shape: Border(bottom: BorderSide(color: AppColors.TxtLight, width: 0.5)),
+      shape: Border(bottom: BorderSide(color: AppColors.txtLight, width: 0.5)),
     );
   }
 
