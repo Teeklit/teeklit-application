@@ -526,6 +526,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
         _hasRepeat != originalTask.repeat.hasRepeat ||
         _repeatUnit != originalTask.repeat.unit ||
         _interval != originalTask.repeat.interval ||
+            _selectedDate != originalTask.startDate ||
         _repeatEndDate != originalTask.endDate ||
         !_listsEqual(_selectedDaysOfWeek, originalTask.repeat.daysOfWeek);
     bool alarmChanged = _hasAlarm != originalTask.noti.hasNoti;
