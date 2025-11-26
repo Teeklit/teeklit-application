@@ -25,17 +25,34 @@ class CustomBottomNavigationBar extends StatefulWidget {
   });
 
   @override
-  State<CustomBottomNavigationBar> createState() => _CustomBottomNavigationBarState();
+  State<CustomBottomNavigationBar> createState() =>
+      _CustomBottomNavigationBarState();
 }
 
 class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
   late int _idx = widget.idx;
 
   final List<NavItem> _navItems = [
-    NavItem(iconPath: 'assets/icons/nav_home.svg', label: '홈', routeName: '/home'),
-    NavItem(iconPath: 'assets/icons/nav_myteekle.svg', label: '내 티클', routeName: '/myteekle'),
-    NavItem(iconPath: 'assets/icons/nav_community.svg', label: '커뮤니티', routeName: '/community',),
-    NavItem(iconPath: 'assets/icons/nav_my.svg', label: 'MY', routeName: '/my',),
+    NavItem(
+      iconPath: 'assets/icons/nav_home.svg',
+      label: '홈',
+      routeName: '/',
+    ),
+    NavItem(
+      iconPath: 'assets/icons/nav_myteekle.svg',
+      label: '내 티클',
+      routeName: '/myteekle',
+    ),
+    NavItem(
+      iconPath: 'assets/icons/nav_community.svg',
+      label: '커뮤니티',
+      routeName: '/community',
+    ),
+    NavItem(
+      iconPath: 'assets/icons/nav_my.svg',
+      label: 'MY',
+      routeName: '/my',
+    ),
   ];
 
   @override
@@ -49,8 +66,13 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
         selectedItemColor: Colors.white,
         unselectedItemColor: AppColors.InactiveTxtGrey,
         type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10,),
-        unselectedLabelStyle: const TextStyle(fontSize: 10,),
+        selectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 10,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 10,
+        ),
         currentIndex: _idx,
         onTap: (index) {
           setState(() {
@@ -64,7 +86,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
 
           return BottomNavigationBarItem(
             icon: Padding(
-              padding: EdgeInsetsGeometry.fromLTRB(0,8,0,5),
+              padding: EdgeInsetsGeometry.fromLTRB(0, 8, 0, 5),
               child: SvgPicture.asset(
                 item.iconPath,
                 width: 24,

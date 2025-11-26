@@ -25,7 +25,8 @@ class _HomePageState extends State<HomePage> {
   final WorkoutApiService _workoutApiService = WorkoutApiService();
 
   String? _nickname;
-  List<Teekle> _todayTeekles = [];
+  List<Teekle> _todayTeekles = []; // 화면에 표시할 티클 (isDone == false인 것들만, 최대 3개)
+  List<Teekle> _allTodayTeekles = []; // 오늘의 모든 티클 (진행률 계산용)
   List<Map<String, dynamic>> _popularPosts = [];
   List<WorkoutVideo> _popularWorkouts = [];
   bool _isLoading = true;
@@ -56,8 +57,12 @@ class _HomePageState extends State<HomePage> {
 
       /// 오늘 날짜의 티클 가져오기
       final today = DateTime.now();
-      _todayTeekles = await _teekleRepository.getTeeklesByDate(today);
-      _todayTeekles = _todayTeekles.take(3).toList(); /// 최대 3개만
+      _allTodayTeekles = await _teekleRepository.getTeeklesByDate(today);
+      // isDone == false인 티클만 필터링하고 최대 3개만 표시
+      _todayTeekles = _allTodayTeekles
+          .where((t) => !t.isDone)
+          .take(3)
+          .toList();
 
       /// 인기 커뮤니티 글 가져오기 (더미 데이터)
       _loadPopularPosts();
@@ -67,13 +72,17 @@ class _HomePageState extends State<HomePage> {
         page: 1,
         perPage: 5,
       );
+      if (!mounted) return;
+
       _popularWorkouts = workoutResponse.data.take(5).toList();
     } catch (e) {
       print('데이터 로드 오류: $e');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -82,13 +91,14 @@ class _HomePageState extends State<HomePage> {
     _popularPosts = [
       {
         'postTitle': '오늘 아침 6시 기상 성공! 🌅',
-        'postContents': '요즘 계속 늦잠 자다가 오늘 드디어 일찍 일어나서 할일들을 해치웠는데 너무 뿌듯합니다',
-        'picUrl': 'https://www.sputnik.kr/article_img/202405/article_1714655499.jpg',
+        'postContents': '요즘 계속 늦잠 자다가 오늘 드디어 일찍 일어나서 할일들을 해치웠는데 너무 뿌듯합니다! 다른 분들도 오늘 하루 화이팅 입니다.',
+        'picUrl':
+            'https://www.sputnik.kr/article_img/202405/article_1714655499.jpg',
         'category': '일상',
         'commentCount': 24,
       },
       {
-        'postTitle': '배고픈데',
+        'postTitle': '복지정책 관련 질문 있어요!',
         'postContents': '요즘 계속 안나가게 되니까 배달을 시켜먹게 되서.. 배고픈데 장봐서 밥해먹어야겠죠',
         'picUrl': 'null',
         'category': '일상',
@@ -112,7 +122,42 @@ class _HomePageState extends State<HomePage> {
         url: teekle.url,
       );
       await _teekleRepository.updateTeekle(updatedTeekle);
-      await _loadData();
+      
+      // 전체 티클 목록 업데이트
+      final today = DateTime.now();
+      _allTodayTeekles = await _teekleRepository.getTeeklesByDate(today);
+      
+      // 2초 딜레이 후에 완료된 티클을 목록에서 제거 (사용자가 완료 상태를 시각적으로 인지할 수 있도록)
+      // 애니메이션이 완료될 때까지 대기 (애니메이션 300ms + 여유 200ms)
+      await Future.delayed(const Duration(milliseconds: 2500));
+      
+      if (mounted) {
+        // 새로운 미완료 티클 목록 가져오기
+        final notDoneTeekles = _allTodayTeekles.where((t) => !t.isDone).toList();
+        
+        setState(() {
+          // 현재 표시 중인 티클 개수 확인 (제거 전)
+          final targetCount = 3;
+          
+          // 완료된 티클을 목록에서 제거
+          _todayTeekles.removeWhere((t) => t.teekleId == teekle.teekleId);
+          
+          // 현재 표시 중인 티클 ID 목록
+          final currentTeekleIds = _todayTeekles.map((t) => t.teekleId).toSet();
+          
+          // 새로운 미완료 티클 중에서 아직 표시되지 않은 것들 찾기
+          final newTeekles = notDoneTeekles
+              .where((t) => !currentTeekleIds.contains(t.teekleId))
+              .take(targetCount - _todayTeekles.length)
+              .toList();
+          
+          // 새로운 티클 추가
+          _todayTeekles.addAll(newTeekles);
+          
+          // 최대 3개로 제한
+          _todayTeekles = _todayTeekles.take(targetCount).toList();
+        });
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -149,23 +194,29 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   /// 상단 헤더 (텍스트 로고 + notification)
+                  const SizedBox(height: 15),
                   const HomeAppBar(),
                   const SizedBox(height: 30),
+
                   /// 시간대 별로 멘트 바뀌는 greetings
                   HomeGreetings(nickname: _nickname),
                   const SizedBox(height: 16),
+
                   /// 내 티클 박스
                   HomeMyTeekleCard(
                     todayTeekles: _todayTeekles,
+                    allTodayTeekles: _allTodayTeekles,
                     onTeekleToggle: _handleTeekleToggle,
                   ),
-                  const SizedBox(height: 30),
-                  /// 지금 다른 사람들은? 박스
+                  const SizedBox(height: 24),
+
+                  /// 인기글 박스
                   HomeTrendingPostCard(popularPosts: _popularPosts),
-                  const SizedBox(height: 30),
-                  /// 최근 인기 많은 운동 TOP5 박스
+                  const SizedBox(height: 34),
+
+                  /// 인기 운동 TOP5 박스
                   HomeTop5WorkoutCard(popularWorkouts: _popularWorkouts),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 35),
                 ],
               ),
             ),

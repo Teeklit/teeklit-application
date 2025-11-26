@@ -16,7 +16,7 @@ class NavigationView extends StatefulWidget {
 
 class _NavigationViewState extends State<NavigationView> {
   int _getCurrentIndex(String location) {
-    if (location.startsWith('/home')) return 0;
+    if (location.startsWith('/')) return 0;
     if (location.startsWith('/teekle')) return 1;
     if (location.startsWith('/community')) return 2;
     if (location.startsWith('/my')) return 3;
@@ -24,7 +24,7 @@ class _NavigationViewState extends State<NavigationView> {
   }
 
   void _onNavTap(int index) {
-    final routes = ['/home', '/teekle', '/community', '/my'];
+    final routes = ['/', '/teekle', '/community', '/my'];
     context.go(routes[index]);
   }
 

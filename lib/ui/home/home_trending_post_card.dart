@@ -23,11 +23,17 @@ class HomeTrendingPostCard extends StatelessWidget {
               '지금 다른 사람들은? 🔥',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
             ),
             TextButton(
+              style: TextButton.styleFrom(
+                // backgroundColor: Colors.red,
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
               onPressed: () {
                 context.go('/community');
               },
@@ -112,7 +118,7 @@ class _PostCard extends StatelessWidget {
                           postContents,
                           style: const TextStyle(
                             color: AppColors.TxtLight,
-                            fontSize: 13,
+                            fontSize: 12,
                             fontWeight: FontWeight.w400,
                           ),
                           maxLines: 3,
@@ -148,15 +154,19 @@ class _PostCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
+
+            /// 게시판 카테고리 표시
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
                   decoration: BoxDecoration(
                     color: AppColors.Orange,
-                    borderRadius: BorderRadius.circular(5),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 6, horizontal: 12,
+                  ),
                   child: Text(
                     category,
                     style: const TextStyle(
@@ -166,6 +176,8 @@ class _PostCard extends StatelessWidget {
                     ),
                   ),
                 ),
+
+                /// 댓글 갯수 표시
                 Row(
                   children: [
                     SvgPicture.asset(
@@ -173,7 +185,7 @@ class _PostCard extends StatelessWidget {
                       width: 14,
                       height: 14,
                       colorFilter: ColorFilter.mode(
-                        AppColors.InactiveTxtGrey,
+                        AppColors.TxtLight,
                         BlendMode.srcIn,
                       ),
                     ),
@@ -181,7 +193,7 @@ class _PostCard extends StatelessWidget {
                     Text(
                       '$commentCount',
                       style: const TextStyle(
-                        color: AppColors.TxtGrey,
+                        color: AppColors.TxtLight,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
@@ -196,4 +208,6 @@ class _PostCard extends StatelessWidget {
     );
   }
 }
+
+
 

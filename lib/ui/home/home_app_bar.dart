@@ -23,18 +23,18 @@ class HomeAppBar extends StatelessWidget {
             BlendMode.srcIn,
           ),
         ),
-        IconButton(
-          icon: SvgPicture.asset(
-            'assets/icons/notification.svg',
-            width: 24,
-            height: 24,
-          ),
-          onPressed:
-              onNotificationTap ??
-              () {
-                /// 알림 화면으로 이동하는 코드 추가해야함
-              },
-        ),
+        // IconButton(
+        //   icon: SvgPicture.asset(
+        //     'assets/icons/notification.svg',
+        //     width: 24,
+        //     height: 24,
+        //   ),
+        //   onPressed:
+        //       onNotificationTap ??
+        //       () {
+        //         /// 알림 화면으로 이동하는 코드 추가해야함
+        //       },
+        // ),
       ],
     );
   }
