@@ -47,7 +47,7 @@ class _SignupEmailVerifyScreenState extends State<SignupEmailVerifyScreen> {
           );
 
           _timer?.cancel();
-          context.go('/home', extra: widget.info);
+          context.go('communityMain', extra: widget.info);
         }
       } on FirebaseAuthException catch (e) {
         print("❌ AutoCheck FirebaseAuthException: ${e.code} / ${e.message}");
