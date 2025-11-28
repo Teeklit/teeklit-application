@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:teeklit/domain/model/teekle.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:teeklit/domain/model/task.dart';
@@ -69,7 +70,7 @@ class TeekleRepository {
   }
 
   /// 특정 날짜의 Teekle 리스트 조회
-  Future<List<Teekle>> getTeeklesByDate(DateTime date) async {
+  Future<List<Teekle>> getTeeklesByDate(DateTime date, String? userId) async {
     try {
       DateTime startOfDay = DateTime(date.year, date.month, date.day);
       DateTime endOfDay = startOfDay.add(Duration(days: 1));
@@ -80,14 +81,15 @@ class TeekleRepository {
 
       final querySnapshot = await _firestore
           .collection(_collectionName)
+          .where('userId', isEqualTo: userId)
           .where('execDate', isGreaterThanOrEqualTo: startOfDay.toIso8601String())
           .where('execDate', isLessThan: endOfDay.toIso8601String())
           .get();
 
-      // print('조회된 teekle 개수: ${querySnapshot.docs.length}');
-      // for (var doc in querySnapshot.docs) {
-      //   print('teekle: ${doc.id}, execDate: ${doc['execDate']}');
-      // }
+      print('조회된 teekle 개수: ${querySnapshot.docs.length}');
+      for (var doc in querySnapshot.docs) {
+        print('teekle: ${doc.id}, execDate: ${doc['execDate']}');
+      }
 
       return querySnapshot.docs
           .map((doc) => Teekle.fromMap(doc.data()))
@@ -150,37 +152,27 @@ class TeekleRepository {
     }
   }
 
-  /// 단일 Teekle 삭제 (수정 페이지에서)
-  /// 사용자가 수정 페이지에서 삭제 버튼을 눌렀을 때 해당 날짜의 teekle만 삭제
-  Future<void> deleteTeeklesByDate(DateTime date) async {
-    try {
-      DateTime startOfDay = DateTime(date.year, date.month, date.day);
-      DateTime endOfDay = startOfDay.add(Duration(days: 1));
-
-      final querySnapshot = await _firestore
-          .collection(_collectionName)
-          .where('execDate', isGreaterThanOrEqualTo: startOfDay.toIso8601String())
-          .where('execDate', isLessThan: endOfDay.toIso8601String())
-          .get();
-
-      WriteBatch batch = _firestore.batch();
-      for (var doc in querySnapshot.docs) {
-        batch.delete(doc.reference);
-      }
-      await batch.commit();
-    } catch (e) {
-      throw Exception('날짜별 Teekle 삭제 실패: $e');
+  /// Teekle 단일 삭제 (teekleId 기준)
+  Future<void> deleteSingleTeekle(String teekleId) async {
+    try {await _firestore
+        .collection(_collectionName)
+        .doc(teekleId)
+        .delete();
+    }catch (e) {
+      throw Exception('단일 Teekle 삭제 실패: $e');
     }
   }
 
   /// 날짜 범위로 teekle 조회 (start <= execDate < end)
   Future<List<Teekle>> getTeeklesByDateRange({
+    required String userId,
     required DateTime start,
     required DateTime end,
   }) async {
     try {
       final querySnapshot = await _firestore
           .collection(_collectionName)
+          .where('userId', isEqualTo: userId)
           .where(
         'execDate',
         isGreaterThanOrEqualTo: start.toIso8601String(),
@@ -201,9 +193,11 @@ class TeekleRepository {
 
   /// 한 달치 teekle 조회 (month 기준)
   Future<List<Teekle>> getTeeklesForMonth(DateTime month) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest';
     final startOfMonth = DateTime(month.year, month.month, 1);
     final startOfNextMonth = DateTime(month.year, month.month + 1, 1);
     return getTeeklesByDateRange(
+      userId: userId,
       start: startOfMonth,
       end: startOfNextMonth,
     );

@@ -9,9 +9,16 @@ class CommunityFirebaseService {
   final postRef = FirebaseFirestore.instance.collection('posts');
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
+  final String comments = 'comments';
+
   /// post add 게시글 추가
   Future<void> addPost(Posts post) async {
     await postRef.add(post.toJson());
+  }
+
+  /// 게시글 수정
+  Future<void> modifyPost(Posts copyPost, String postId) async{
+    await postRef.doc(postId).update(copyPost.toJson());
   }
 
   /// post one read 게시글 하나 읽기
@@ -32,13 +39,13 @@ class CommunityFirebaseService {
   }
 
   /// save Image 사진 저장, Firebase Storage 기능
-  Future<String> saveImage(File image, String imageName) async {
+  Future<String> saveImage(File image) async {
     // ref
     final storageRef = FirebaseStorage.instance
         .ref()
         .child('image')
         .child('community')
-        .child('${DateTime.now().millisecondsSinceEpoch}_$imageName');
+        .child('${DateTime.now().millisecondsSinceEpoch}');
 
     // 저장
     await storageRef.putFile(image);
@@ -86,14 +93,14 @@ class CommunityFirebaseService {
 
   /// 댓글 저장
   void commentWrite(Comments newComment, String postId) async{
-    postRef.doc(postId).collection('comment').add(newComment.toJson());
+    postRef.doc(postId).collection(comments).add(newComment.toJson());
   }
 
   /// 댓글 가져오기
   Future<List<Comments>> readComment(String postId) async {
     List<Comments> getComments = [];
 
-    final documentSnapshot = await postRef.doc(postId).collection('comment').where('isHided', isEqualTo: false).orderBy('createAt',).get();
+    final documentSnapshot = await postRef.doc(postId).collection(comments).where('isHided', isEqualTo: false).orderBy('createAt',).get();
 
     for(var i in documentSnapshot.docs){
       getComments.add(Comments.fromJson(i));
@@ -126,14 +133,55 @@ class CommunityFirebaseService {
 
     return postLikeUserList;
   }
-  
+
   /// 게시글 숨기기 기능
   Future<void> hidePost(String postId) async{
     await postRef.doc(postId).update({'isHided': true});
   }
 
-  /// 댓글 숨기기 기능 TODO 댓글 받아오는거 필터링
+  /// 댓글 숨기기 기능
   Future<void> hideComment(String postId,String commentId) async{
-    await postRef .doc(postId).collection('comments').doc(commentId).update({'isHided': true});
+    await postRef.doc(postId).collection(comments).doc(commentId).update({'isHided': true});
   }
+
+  /// 댓글 삭제
+  Future<void> deleteComment(String postId, String commentId) async{
+    await postRef.doc(postId).collection(comments).doc(commentId).delete();
+  }
+
+  // 댓글 5개 이상의 게시글 추출
+  Future<List<Posts>> popularPosts() async{
+    List<Posts> popularPostsList = [];
+
+    // post 전체를 읽어옴
+    final documentSnapshot = await postRef.get();
+
+    // 읽어온 post들을 반복시킴
+    for(var i in documentSnapshot.docs){
+
+      // i라는 post의 id를 갖고 post의 sub collection인 comment에 접근해서 comment 전부 가져옴
+      final commentSnapshot = await postRef.doc(i.id).collection(comments).get();
+      List<Comments> commentList = [];
+
+      // comment 반복시켜서 임시 저장시킴
+      for(var j in commentSnapshot.docs){
+        commentList.add(Comments.fromJson(j));
+      }
+
+      // 임시 저장시킨 댓글이 5개 이상이면, 그 댓글들을 갖고 있는 post를 반환시킬 list에 추가
+      if(commentList.length >= 5){
+        popularPostsList.add(Posts.fromJson(i));
+      }
+
+      // 반환시킬 list가 5개를 넘어서면 즉시 반환, 함수 종료
+      if(popularPostsList.length >= 5){
+        return popularPostsList;
+      }
+      print('인기글 갯수 : ${popularPostsList.length}');
+    }
+
+    // 5개를 안넘어가도 현재 갖고 있는 값만 전달
+    return popularPostsList;
+  }
+
 }

@@ -136,9 +136,9 @@ class HomeMyTeekleCard extends StatelessWidget {
                 child: Text(
                   '오늘의 모든 티클을 완료했어요! 대단해요 🎉',
                   style: TextStyle(
-                    color: AppColors.Green,
+                    color: Colors.white,
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -268,6 +268,7 @@ class _AnimatedTeekleItemState extends State<_AnimatedTeekleItem>
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          SizedBox(width: 20,),
           GestureDetector(
             onTap: _handleTap,
             child: SvgPicture.asset(

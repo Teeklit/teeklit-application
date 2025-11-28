@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -11,14 +12,12 @@ import 'package:teeklit/domain/model/enums.dart';
 import 'package:teeklit/domain/model/teekle.dart';
 import 'package:teeklit/domain/model/task.dart';
 import 'package:teeklit/ui/teekle/providers/teekle_stats_provider.dart';
-import 'package:teeklit/ui/teekle/widgets/teekle_setting_page.dart';
 import '../../core/themes/colors.dart';
 import 'teekle_list_item.dart';
 import 'random_teekle_card.dart';
 
 import 'progress_card.dart';
 import 'package:teeklit/ui/teekle/view_model/view_model_teekle_setting.dart';
-import 'package:go_router/go_router.dart';
 
 
 class TeekleMainScreen extends StatefulWidget {
@@ -31,6 +30,7 @@ class TeekleMainScreen extends StatefulWidget {
 class _TeekleMainScreenState extends State<TeekleMainScreen> {
   final TaskRepository _taskRepository = TaskRepository();
   final TeekleRepository _teekleRepository = TeekleRepository();
+  String? _currentUserId;
 
   // 한 달치 데이터를 날짜별로 모아두는 맵
   final Map<DateTime, List<Teekle>> _teeklesByDay = {};
@@ -91,6 +91,8 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
       _errorMessage = null;
     });
 
+    if (_currentUserId == null) return;
+
     try {
       final teekles = await _teekleRepository.getTeeklesForMonth(month);
 
@@ -142,7 +144,7 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
         _randomCandidates = candidates;
       });
     } catch (e) {
-      print('❌ 랜덤 Task 후보 로드 오류: $e');
+      print('랜덤 Task 후보 로드 오류: $e');
       setState(() {
         _randomErrorMessage = '랜덤 후보 불러오기 실패: $e';
       });
@@ -302,11 +304,11 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => context.pop(false), // <-- go_router의 pop 사용
+              onPressed: () => context.pop(false),
               child: const Text('아니오'),
             ),
             TextButton(
-              onPressed: () => context.pop(true),   // <-- go_router의 pop 사용
+              onPressed: () => context.pop(true),
               child: const Text('예'),
             ),
           ],
@@ -315,9 +317,9 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
 
       if (result != true) return;
 
-      // 4. 실제 저장할 랜덤 Teekle 객체 만들기 (오늘 날짜 + 새 ID)
+      /// 4. 실제 저장할 랜덤 Teekle 객체 만들기 (오늘 날짜 + 새 ID)
       try {
-        // ✏️ 변경 부분 1: template 객체의 필드 검증
+        /// template 객체의 필드 검증
         if (template.title == null || template.title!.isEmpty) {
           throw Exception('템플릿의 제목이 비어있습니다.');
         }
@@ -325,8 +327,8 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
         _viewModel.setTitle(template.title);
         _viewModel.setDate(selectedDay);
 
-        // ✏️ 변경 부분 2: 기본값 설정
-        final taskType = template.type ?? TaskType.todo;
+        /// 기본값 설정
+        final taskType = template.type;
         final tag = null;
 
         bool success = await _viewModel.saveTask(
@@ -335,7 +337,7 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
         );
 
         if (success && mounted) {
-          // ✏️ 변경 부분 3: 새로고침 전에 약간의 지연 추가
+          /// 새로고침 전에 약간의 지연 추가
           await Future.delayed(const Duration(milliseconds: 500));
           await _loadTeeklesForMonth(selectedDay);
 
@@ -445,6 +447,15 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
     _loadTeeklesForMonth(selectedDay);
     _loadRandomCandidates();
     _viewModel = TeekleSettingViewModel();
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _currentUserId = user.uid;
+      _loadTeeklesForMonth(DateTime.now());
+    } else {
+      _currentUserId = 'guest';
+      print("로그인된 사용자가 없습니다.");
+    }
   }
 
   @override
@@ -737,7 +748,7 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
 
                                   child: TeekleListItem(
                                     title: teekle.title,
-                                    tag: teekle.tag,
+                                    tag: teekle.tag?.tagName,
                                     color:
                                         teekleColors[index %
                                             teekleColors.length],

@@ -201,7 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       // 4) 인증 완료 → 홈 이동
-      context.go('/home');
+      context.go('/');
     } on FirebaseAuthException catch (e) {
       String message = "로그인 실패";
 

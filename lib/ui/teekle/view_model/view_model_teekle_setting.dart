@@ -5,8 +5,10 @@ import 'package:teeklit/domain/model/noti.dart';
 import 'package:teeklit/domain/model/repeat.dart';
 import 'package:teeklit/domain/model/task.dart';
 import 'package:teeklit/domain/model/teekle.dart';
+import 'package:teeklit/domain/model/tag.dart';
 import 'package:teeklit/data/repositories/repository_task.dart';
 import 'package:teeklit/data/repositories/repository_teekle.dart';
+import 'package:teeklit/data/repositories/repository_tag.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// 내 티클 관련 상태관리 및 비즈니스 로직까지 한번에 처리.
@@ -16,6 +18,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
   ///========== Repository ==========
   final TaskRepository _taskRepository = TaskRepository();
   final TeekleRepository _teekleRepository = TeekleRepository();
+  final TagRepository _tagRepository = TagRepository();
 
   ///============= 변수 선언 ============
   DateTime now = DateTime.now();
@@ -39,12 +42,16 @@ class TeekleSettingViewModel extends ChangeNotifier {
   List<DayOfWeek>? _selectedDaysOfWeek;
 
   ///태그 설정
-  String? _selectedTag;
+  Tag? _selectedTag;
+
+  ///유저 아이디
+  final String _userId;
 
   String? _url;
 
   TeekleSettingViewModel({DateTime? initDate, DateTime? initAlarmTime})
-    : _selectedDate = initDate ?? DateTime.now(),
+    : _userId = FirebaseAuth.instance.currentUser?.uid ?? 'guest',
+        _selectedDate = initDate ?? DateTime.now(),
       _selectedAlarmTime = initAlarmTime ?? DateTime.now(),
       _repeatUnit = null,
       _interval = null,
@@ -53,7 +60,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
       _selectedTag = null;
 
   ///================== 읽기 전용 : getter ==================
-  String get _userId => FirebaseAuth.instance.currentUser?.uid ?? 'guest';
+  String get userId => _userId;
 
   /// 투두/운동 이름 getter
   String get title => _title;
@@ -73,7 +80,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
   List<DayOfWeek>? get selectedDaysOfWeek => _selectedDaysOfWeek;
 
   /// 태그 getter
-  String? get selectedTag => _selectedTag;
+  Tag? get selectedTag => _selectedTag;
 
   String? get url => _url;
 
@@ -136,7 +143,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
   }
 
   /// 태그 설정
-  void setTagSetting(String? selectedTag) {
+  void setTagSetting(Tag? selectedTag) {
     _selectedTag = selectedTag;
     notifyListeners();
   }
@@ -162,9 +169,25 @@ class TeekleSettingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 새 tag 생성
+  Future<bool> createTag({required String tagName}) async {
+    notifyListeners();
+
+    try {
+      Tag newTag = Tag(userId: userId, tagId: uuid.v4(), tagName: tagName);
+      await _tagRepository.createTag(newTag);
+    } catch (e) {
+      notifyListeners();
+      return false;
+    }
+
+    return true;
+  }
+
+  /// 새 task 생성
   Future<bool> saveTask({
     required TaskType taskType,
-    required String? tag,
+    required Tag? tag,
     String? url,
   }) async {
     // _isLoading = true;
@@ -178,7 +201,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
 
       /// Task 객체 생성
       Task task = Task(
-        userId: _userId,
+        userId: userId,
         taskId: uuid.v4(),
         type: taskType,
         title: _title,
@@ -201,7 +224,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
       await _taskRepository.createTask(task);
 
       /// Task를 기준으로 반복 패턴에 따라 Teekle n개 생성
-      List<Teekle> teekles = _generateTeekles(task, tag);
+      List<Teekle> teekles = _generateTeekles(task, _selectedTag);
 
       /// 생성된 Teekles를 Repository를 통해 DB에 저장
       if (teekles.isNotEmpty) {
@@ -219,7 +242,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
   }
 
   /// ============ 반복 패턴에 따라 Teekle 생성 ============
-  List<Teekle> _generateTeekles(Task task, String? tag) {
+  List<Teekle> _generateTeekles(Task task, Tag? tag) {
     // print('_generateTeekles() 호출 : Task 저장 후 반복패턴에 맞게 teekle 리스트 생성');
     List<Teekle> teekles = [];
 
@@ -417,30 +440,28 @@ class TeekleSettingViewModel extends ChangeNotifier {
   /// ============ 기존 Task 정보를 받아 ViewModel 초기화 ============
   /// Teekle 수정 페이지에 진입할 때 호출. teekle과 원본 task 정보를 받아서 UI에 표시
   void initializeFromTeekle(Teekle teekle, Task originalTask) {
-    print('===== 단계 5: initializeFromTeekle 실행 =====');
+    // print('===== initializeFromTeekle 실행 =====');
 
     _title = teekle.title;
     _selectedDate = teekle.execDate;
     _selectedTag = teekle.tag;
 
-    print('teekle.noti 정보:');
-    print('  hasNoti: ${teekle.noti.hasNoti}');
-    print('  notiTime: ${teekle.noti.notiTime}');
+    // print('teekle.noti 정보:');
+    // print('  hasNoti: ${teekle.noti.hasNoti}');
+    // print('  notiTime: ${teekle.noti.notiTime}');
 
     _hasAlarm = teekle.noti.hasNoti;
     _selectedAlarmTime = teekle.noti.notiTime ?? DateTime.now();
 
-    print('ViewModel에 설정된 값:');
-    print('  _hasAlarm: $_hasAlarm');
-    print('  _selectedAlarmTime: $_selectedAlarmTime');
+    // print('ViewModel에 설정된 값:');
+    // print('  _hasAlarm: $_hasAlarm');
+    // print('  _selectedAlarmTime: $_selectedAlarmTime');
 
     _hasRepeat = originalTask.repeat.hasRepeat;
     _repeatUnit = originalTask.repeat.unit;
     _interval = originalTask.repeat.interval;
     _repeatEndDate = originalTask.endDate;
     _selectedDaysOfWeek = originalTask.repeat.daysOfWeek;
-
-    print('================================');
 
     notifyListeners();
   }
@@ -452,13 +473,13 @@ class TeekleSettingViewModel extends ChangeNotifier {
   Future<bool> updateTask({
     required Teekle originalTeekle,
     required Task originalTask,
-    required String? tag,
+    required Tag? tag,
   }) async {
     notifyListeners();
 
     try {
       ///값 변경 먼저 확인
-      bool hasChanged = _hasTaskChanged(originalTask);
+      bool hasChanged = _hasTaskChanged(originalTask, originalTeekle);
 
       if (!hasChanged) {
         print('변경된 값이 없습니다. DB 작업 스킵');
@@ -489,7 +510,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
           notiTime: _hasAlarm ? _selectedAlarmTime : null,
         ),
         url: null,
-        userId: 'test2',
+        userId: _userId,
       );
 
       /// 선택한 날짜 포함 이후의 teekle 삭제 (isDone=false만)
@@ -502,7 +523,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
       await _taskRepository.createTask(newTask);
 
       /// 새로운 Teekle 생성
-      List<Teekle> newTeekles = _generateTeekles(newTask, tag);
+      List<Teekle> newTeekles = _generateTeekles(newTask, _selectedTag);
 
       /// 새로운 Teekles DB 저장
       if (newTeekles.isNotEmpty) {
@@ -520,30 +541,27 @@ class TeekleSettingViewModel extends ChangeNotifier {
 
   /// ============ 단일 Teekle 삭제 (수정 페이지 삭제 버튼) ============
   /// 사용자가 수정 페이지에서 삭제 버튼을 눌렀을 때 해당 날짜의 teekle만 삭제 (다른 날짜의 teekle은 유지)
-  Future<bool> deleteTeekleAtDate(DateTime date) async {
+  Future<bool> deleteTeekleAtDate(String teekleId) async {
     notifyListeners();
 
     try {
-      await _teekleRepository.deleteTeeklesByDate(date);
-      notifyListeners();
+      await _teekleRepository.deleteSingleTeekle(teekleId);
       return true;
     } catch (e) {
-      print('Teekle 삭제 실패: $e');
-      notifyListeners();
       return false;
     }
   }
 
   /// ============ Task 변경 감지 ============
   /// 수정 전후의 Task값을 비교해 실제로 변경되었는지 검증
-  bool _hasTaskChanged(Task originalTask) {
-    // title, 반복 설정, 알림, 태그 등이 변경되었는지 확인
+  bool _hasTaskChanged(Task originalTask, Teekle originalTeekle) {
+    /// title, 반복 설정, 알림, 태그 등이 변경되었는지 확인
     bool titleChanged = _title != originalTask.title;
     bool repeatChanged =
         _hasRepeat != originalTask.repeat.hasRepeat ||
         _repeatUnit != originalTask.repeat.unit ||
         _interval != originalTask.repeat.interval ||
-            _selectedDate != originalTask.startDate ||
+        _selectedDate != originalTask.startDate ||
         _repeatEndDate != originalTask.endDate ||
         !_listsEqual(_selectedDaysOfWeek, originalTask.repeat.daysOfWeek);
     bool alarmChanged = _hasAlarm != originalTask.noti.hasNoti;
@@ -553,16 +571,9 @@ class TeekleSettingViewModel extends ChangeNotifier {
       alarmChanged = _selectedAlarmTime != originalTask.noti.notiTime;
     }
 
-    print('alarmChanged: $alarmChanged');
-    print('  hasAlarm: $_hasAlarm vs ${originalTask.noti.hasNoti}');
-    if (_hasAlarm && originalTask.noti.hasNoti) {
-      print(
-        '  selectedAlarmTime: $_selectedAlarmTime vs ${originalTask.noti.notiTime}',
-      );
-    }
-    ;
+    bool tagChanged = _selectedTag?.tagId != originalTeekle.tag?.tagId;
 
-    return titleChanged || repeatChanged || alarmChanged;
+    return titleChanged || repeatChanged || alarmChanged || tagChanged;
   }
 
   ///============ utils ============

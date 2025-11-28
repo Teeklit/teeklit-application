@@ -12,10 +12,12 @@ class ViewFooterCommentContentsSection extends StatefulWidget {
   final User userInfo;
   final String userId;
   final bool isAdmin;
+  final String myId;
   final Function(String?) onReply;
   final Future<void> Function() blockUser;
   final Future<bool> Function(String, String, String) reportPost;
   final Future<void> Function(String) hideComment;
+  final Future<void> Function(String) deleteComment;
 
   /// 댓글 보여주는 위젯
   const ViewFooterCommentContentsSection({
@@ -28,6 +30,8 @@ class ViewFooterCommentContentsSection extends StatefulWidget {
     required this.hideComment,
     required this.userId,
     required this.isAdmin,
+    required this.myId,
+    required this.deleteComment,
   });
 
   @override
@@ -140,10 +144,30 @@ class _ViewFooterCommentContentsSectionState
                       callback: () async {
                         await widget.hideComment(commentId);
                         Navigator.pop(context);
-
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          context.go('/community/');
-                        });
+                      },
+                    ),
+                  ),
+                ],
+                if(widget.commentInfo.userId == widget.myId)...[
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.txtGray,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    margin: EdgeInsets.only(top: 5),
+                    width: double.infinity,
+                    child: CustomTextButton(
+                      buttonText: Text(
+                        '삭제',
+                        style: TextStyle(
+                          color: AppColors.ivory,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                        ),
+                      ),
+                      callback: () async {
+                        await widget.deleteComment(commentId);
+                        Navigator.pop(context);
                       },
                     ),
                   ),

@@ -1,3 +1,5 @@
+import 'package:teeklit/domain/model/tag.dart';
+
 import 'enums.dart';
 import 'noti.dart';
 
@@ -9,7 +11,7 @@ class Teekle {
   final TaskType type;
   final DateTime execDate;
   final String title;
-  String? tag;
+  final Tag? tag;
   bool isDone;
   final Noti noti;
   final String? url;
@@ -21,7 +23,7 @@ class Teekle {
     required this.type,
     required this.execDate,
     required this.title,
-    required this.tag,
+    this.tag,
     this.isDone = false,
     required this.noti,
     this.url,
@@ -35,26 +37,25 @@ class Teekle {
       'type' : type.name,
       'execDate' : execDate.toIso8601String(),
       'title' : title,
-      'tag' : tag,
       'isDone' : isDone,
       'noti' : noti.toMap(),
       'url' : url,
+      'tag' : tag?.toMap(),
     };
   }
 
   factory Teekle.fromMap(Map<String, dynamic> map) {
-    // ✏️ userId를 선택적 필드로 변경 (null 허용)
     if (map['teekleId'] == null ||
         map['taskId'] == null ||
         map['type'] == null ||
         map['execDate'] == null ||
         map['title'] == null ||
-        map['noti'] == null) {
+        map['noti'] == null ) {
       throw Exception('필수 필드 누락: $map');
     }
 
     return Teekle(
-      userId: map['userId'] as String? ?? 'guest',  // ✏️ userId는 선택적
+      userId: map['userId'] as String? ?? 'guest',
       teekleId: map['teekleId'] as String? ?? '',
       taskId: map['taskId'] as String? ?? '',
       type: TaskType.values.firstWhere(
@@ -63,7 +64,7 @@ class Teekle {
       ),
       execDate: DateTime.tryParse(map['execDate'] as String? ?? '') ?? DateTime.now(),
       title: map['title'] as String? ?? '제목 없음',
-      tag: map['tag'] as String?,
+      tag: map['tag'] != null ? Tag.fromMap(map['tag'] as Map<String, dynamic>) : null,
       isDone: (map['isDone'] as bool?) ?? false,
       noti: map['noti'] != null
           ? Noti.fromMap(map['noti'] as Map<String, dynamic>)

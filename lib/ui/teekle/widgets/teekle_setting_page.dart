@@ -13,6 +13,8 @@ import 'package:teeklit/domain/model/task.dart';
 import 'package:teeklit/data/repositories/repository_task.dart';
 import 'package:provider/provider.dart';
 
+import '../../../domain/model/tag.dart';
+
 class TeekleSettingPage extends StatefulWidget {
   final TeeklePageType? type;
 
@@ -157,7 +159,7 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
   }
 
   void _handleTag(TeekleSettingViewModel viewModel) async {
-    final pickedTag = await showTeekleTagSetting(
+    final Tag? pickedTag = await showTeekleTagSetting(
       context,
       pickedTag: viewModel.selectedTag,
     );
@@ -460,7 +462,7 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
                                           right: 6.0,
                                         ),
                                         child: Text(
-                                          viewModel.selectedTag!,
+                                          viewModel.selectedTag!.tagName,
                                           style: const TextStyle(
                                             color: AppColors.TxtLight,
                                             fontWeight: FontWeight.w500,
@@ -495,7 +497,7 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
                               bool success = await context
                                   .read<TeekleSettingViewModel>()
                                   .deleteTeekleAtDate(
-                                widget.teekleToEdit!.execDate,
+                                widget.teekleToEdit!.teekleId,
                               );
 
                               if (success && mounted) {

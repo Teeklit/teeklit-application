@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:provider/provider.dart';
 import 'package:teeklit/utils/scroll_gradient_overlay.dart';
 import 'package:teeklit/utils/colors.dart';
 import 'bottom_sheet_header.dart';
+import 'package:teeklit/ui/teekle/view_model/view_model_teekle_setting.dart';
+import 'package:teeklit/domain/model/tag.dart';
+import 'package:teeklit/data/repositories/repository_tag.dart';
 
 enum SettingMode { select, edit, add }
 
-Future<String?> showTeekleTagSetting(
+Future<Tag?> showTeekleTagSetting(
   BuildContext context, {
-  String? pickedTag,
+  Tag? pickedTag,
 }) async {
-  String? lastSelectedTag = pickedTag;
+  Tag? lastSelectedTag = pickedTag;
 
-  final result = await showModalBottomSheet<String>(
+  final result = await showModalBottomSheet<Tag?>(
     context: context,
     isScrollControlled: true,
     backgroundColor: AppColors.BottomSheetBg,
@@ -26,13 +30,12 @@ Future<String?> showTeekleTagSetting(
       },
     ),
   );
-  print('selectedTag in showTeekleTagSetting : ${lastSelectedTag}');
   return result ?? lastSelectedTag;
 }
 
 class TagBottomSheet extends StatefulWidget {
-  final String? initialTag;
-  final ValueChanged<String?>? onTagChanged;
+  final Tag? initialTag;
+  final ValueChanged<Tag?>? onTagChanged;
 
   const TagBottomSheet({super.key, this.initialTag, this.onTagChanged});
 
@@ -41,22 +44,28 @@ class TagBottomSheet extends StatefulWidget {
 }
 
 class _TagBottomSheetState extends State<TagBottomSheet> {
-  String? _selectedTag;
+  late TeekleSettingViewModel _viewModel;
+  late TagRepository _tagRepo;
+  Tag? _selectedTag;
   final ScrollController _scrollController = ScrollController();
   bool _showTopGradient = false;
   SettingMode settingMode = SettingMode.select;
+  late String _userId;
 
-  /// 태그 리스트를 부모의 상태 변수로 중앙 관리합니다.
-  List<String> _tags = [];
+  /// 태그 리스트를 부모의 상태 변수로 중앙 관리
+  late Future<List<Tag>> _tags;
 
   @override
   void initState() {
     super.initState();
     _selectedTag = widget.initialTag;
     print('TagBottomSheet initState: $_selectedTag');
+    _viewModel = TeekleSettingViewModel();
 
     _scrollController.addListener(_onScroll);
-    _tags = List.from(dummyTags);
+    _tagRepo = TagRepository();
+    _userId = _viewModel.userId;
+    _tags = _tagRepo.TagsByUserId(_userId);
   }
 
   @override
@@ -99,14 +108,16 @@ class _TagBottomSheetState extends State<TagBottomSheet> {
                     settingMode = SettingMode.edit;
                   });
                 },
-                onClose: () => Navigator.pop(context),
+                onClose: () => Navigator.pop(context, _selectedTag),
               ),
               const SizedBox(height: 20),
               TagAdd(
-                onAdd: (newTag) {
+                viewModel: _viewModel,
+                onAdd: (newTag) async {
                   setState(() {
-                    _tags.add(newTag);
                     settingMode = SettingMode.edit;
+                    /// 태그 리스트 재로드
+                    _tags = _tagRepo.TagsByUserId(_userId);
                   });
                 },
               ),
@@ -147,7 +158,7 @@ class _TagBottomSheetState extends State<TagBottomSheet> {
                         settingMode = SettingMode.select;
                       });
                     },
-                    onClose: () => Navigator.pop(context),
+                    onClose: () => Navigator.pop(context, _selectedTag),
                   ),
                 const SizedBox(height: 20),
                 Expanded(
@@ -161,7 +172,8 @@ class _TagBottomSheetState extends State<TagBottomSheet> {
                           showTopGradient: _showTopGradient,
                           onTagTap: (tag) {
                             setState(() {
-                              _selectedTag = (_selectedTag == tag) ? null : tag;
+                              /// tagId로 비교하여 선택/해제 토글
+                              _selectedTag = (_selectedTag?.tagId == tag.tagId) ? null : tag;
                             });
                             widget.onTagChanged?.call(_selectedTag);
                           },
@@ -176,11 +188,13 @@ class _TagBottomSheetState extends State<TagBottomSheet> {
                               settingMode = SettingMode.add;
                             });
                           },
-                          onDelete: (tagToDelete) {
+                          onDelete: (tagToDelete) async {
+                            await _tagRepo.deleteTag(tagToDelete.tagId);
                             setState(() {
-                              _tags.remove(tagToDelete);
+                              _tags = _tagRepo.TagsByUserId(_userId);
                             });
                           },
+                          tagRepository: _tagRepo,
                         );
                       } else {
                         return Container();
@@ -198,11 +212,11 @@ class _TagBottomSheetState extends State<TagBottomSheet> {
 }
 
 class TagSelect extends StatelessWidget {
-  final List<String> tags;
+  final Future<List<Tag>> tags;
   final ScrollController scrollController;
-  final String? selectedTag;
+  final Tag? selectedTag;
   final bool showTopGradient;
-  final ValueChanged<String> onTagTap;
+  final ValueChanged<Tag> onTagTap;
 
   const TagSelect({
     super.key,
@@ -217,34 +231,74 @@ class TagSelect extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        ListView.builder(
-          controller: scrollController,
-          itemCount: tags.length,
-          itemBuilder: (context, index) {
-            final tag = tags[index];
-            final isSelected = selectedTag == tag;
-            return Card(
-              elevation: 0,
-              color: Colors.transparent,
-              margin: const EdgeInsets.only(bottom: 10.0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: ListTile(
-                visualDensity: VisualDensity.compact,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                title: Text(
-                  tag,
-                  style: TextStyle(
-                    color: isSelected ? AppColors.TxtDark : Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
+        FutureBuilder<List<Tag>>(
+          future: tags,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.Green),
                 ),
-                tileColor: isSelected ? AppColors.Green : AppColors.StrokeGrey,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                onTap: () => onTagTap(tag),
-              ),
+              );
+            }
+
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  '태그를 불러올 수 없습니다',
+                  style: TextStyle(color: AppColors.TxtGrey),
+                ),
+              );
+            }
+
+            final tagList = snapshot.data ?? [];
+
+            if (tagList.isEmpty) {
+              return Center(
+                child: Text(
+                  '추가된 태그가 없습니다',
+                  style: TextStyle(color: AppColors.TxtGrey),
+                ),
+              );
+            }
+
+            return ListView.builder(
+              controller: scrollController,
+              itemCount: tagList.length,
+              itemBuilder: (context, index) {
+                final tag = tagList[index];
+                final isSelected = selectedTag?.tagId == tag.tagId;
+                return Card(
+                  elevation: 0,
+                  color: Colors.transparent,
+                  margin: const EdgeInsets.only(bottom: 10.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ListTile(
+                    visualDensity: VisualDensity.compact,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 0,
+                    ),
+                    title: Text(
+                      tag.tagName,
+                      style: TextStyle(
+                        color: isSelected ? AppColors.TxtDark : Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    tileColor: isSelected
+                        ? AppColors.Green
+                        : AppColors.StrokeGrey,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    onTap: () => onTagTap(tag),
+                  ),
+                );
+              },
             );
           },
         ),
@@ -265,11 +319,12 @@ class TagSelect extends StatelessWidget {
 }
 
 class TagEdit extends StatelessWidget {
-  final List<String> tags;
+  final Future<List<Tag>> tags;
   final ScrollController scrollController;
   final bool showTopGradient;
   final VoidCallback onAddPressed;
-  final ValueChanged<String> onDelete;
+  final Future<void> Function(Tag) onDelete;
+  final TagRepository tagRepository;
 
   const TagEdit({
     super.key,
@@ -278,66 +333,134 @@ class TagEdit extends StatelessWidget {
     required this.showTopGradient,
     required this.onAddPressed,
     required this.onDelete,
+    required this.tagRepository,
   });
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        ListView.builder(
-          controller: scrollController,
-          itemCount: tags.length,
-          itemBuilder: (context, index) {
-            final tag = tags[index];
-            return Card(
-              elevation: 0,
-              color: Colors.transparent,
-              margin: const EdgeInsets.only(bottom: 10.0),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Slidable(
-                /// 리스트에 고유 키를 부여 -> 삭제가 되어도 다음 리스트가 삭제된 ListView 상태를 물려받지 안도록 설정
-                key: ValueKey(tag),
-                endActionPane: ActionPane(
-                  motion: const ScrollMotion(),
-                  extentRatio: 0.25,
-                  children: [
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => onDelete(tag), // 콜백 호출
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.WarningRed,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+        FutureBuilder<List<Tag>>(
+          future: tags,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.Green),
+                ),
+              );
+            }
+
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  '태그를 불러올 수 없습니다',
+                  style: TextStyle(color: AppColors.TxtGrey),
+                ),
+              );
+            }
+
+            final tagList = snapshot.data ?? [];
+
+            return ListView.builder(
+              controller: scrollController,
+              itemCount: tagList.length,
+              itemBuilder: (context, index) {
+                final tag = tagList[index];
+                return Card(
+                  elevation: 0,
+                  color: Colors.transparent,
+                  margin: const EdgeInsets.only(bottom: 10.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Slidable(
+                    /// 리스트에 고유 키를 부여 -> 삭제가 되어도 다음 리스트가 삭제된 ListView 상태를 물려받지 안도록 설정
+                    key: ValueKey(tag.tagId),
+                    endActionPane: ActionPane(
+                      motion: const ScrollMotion(),
+                      extentRatio: 0.25,
+                      children: [
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                /// DB에서 삭제
+                                try {
+                                  // await tagRepository.deleteTag(tag.tagId);
+                                  // onDelete(tag.tagName); // tagName 콜백
+                                  //
+                                  // if (context.mounted) {
+                                  //   ScaffoldMessenger.of(context).showSnackBar(
+                                  //     const SnackBar(
+                                  //       content: Text('태그가 삭제되었습니다'),
+                                  //     ),
+                                  //   );
+                                  // }
+                                  await onDelete(tag);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('태그가 삭제되었습니다'),
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('삭제 실패: $e'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.WarningRed,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.delete_outline_rounded,
+                                color: Colors.white,
+                                size: 24,
+                              ),
                             ),
                           ),
-                          child: const Icon(
-                            Icons.delete_outline_rounded,
-                            color: Colors.white,
-                            size: 24,
-                          ),
+                        ),
+                      ],
+                    ),
+                    child: ListTile(
+                      visualDensity: VisualDensity.compact,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 0,
+                      ),
+                      title: Text(
+                        tag.tagName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      tileColor: AppColors.StrokeGrey,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: const BorderSide(
+                          color: AppColors.DarkGreen,
+                          width: 1,
                         ),
                       ),
                     ),
-                  ],
-                ),
-                child: ListTile(
-                  visualDensity: VisualDensity.compact,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                  title: Text(
-                    tag,
-                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
                   ),
-                  tileColor: AppColors.StrokeGrey,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: const BorderSide(color: AppColors.DarkGreen, width: 1),
-                  ),
-                ),
-              ),
+                );
+              },
             );
           },
         ),
@@ -376,7 +499,13 @@ class TagEdit extends StatelessWidget {
 
 class TagAdd extends StatefulWidget {
   final ValueChanged<String> onAdd;
-  const TagAdd({super.key, required this.onAdd});
+  final TeekleSettingViewModel viewModel;
+
+  const TagAdd({
+    super.key,
+    required this.onAdd,
+    required this.viewModel,
+  });
 
   @override
   State<TagAdd> createState() => _TagAddState();
@@ -384,6 +513,7 @@ class TagAdd extends StatefulWidget {
 
 class _TagAddState extends State<TagAdd> {
   final _controller = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -399,11 +529,15 @@ class _TagAddState extends State<TagAdd> {
         children: [
           const Text(
             '태그 이름',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 8),
           TextField(
-            controller: _controller, // 컨트롤러 연결
+            controller: _controller,
             keyboardType: TextInputType.multiline,
             cursorColor: AppColors.Green,
             style: const TextStyle(color: Colors.white),
@@ -413,7 +547,10 @@ class _TagAddState extends State<TagAdd> {
               hintStyle: const TextStyle(color: Color(0xff8E8E93)),
               filled: true,
               fillColor: const Color(0xff3A3A3C),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -424,12 +561,57 @@ class _TagAddState extends State<TagAdd> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                final newTag = _controller.text.trim();
-                if (newTag.isNotEmpty) {
-                  widget.onAdd(newTag); // 콜백 호출
-                }
-              },
+              onPressed: _isLoading
+                  ? null
+                  : () async {
+                      final newTag = _controller.text.trim();
+                      if (newTag.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('태그 이름을 입력해주세요')),
+                        );
+                        return;
+                      }
+
+                      setState(() {
+                        _isLoading = true;
+                      });
+
+                      try {
+                        // ✏️ ViewModel의 createTag() 호출
+                        final success = await widget.viewModel.createTag(
+                          tagName: newTag,
+                        );
+
+                        if (success && mounted) {
+                          widget.onAdd(newTag);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('태그가 추가되었습니다')),
+                          );
+                        } else if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('태그 추가에 실패했습니다'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('오류: $e'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      } finally {
+                        if (mounted) {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+                      }
+                    },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.all(16),
                 backgroundColor: AppColors.Green,
@@ -437,7 +619,23 @@ class _TagAddState extends State<TagAdd> {
                   borderRadius: BorderRadius.all(Radius.circular(20)),
                 ),
               ),
-              child: const Text('저장', style: TextStyle(color: Colors.white, fontSize: 16)),
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.TxtDark,
+                        ),
+                      ),
+                    )
+                  : const Text(
+                      '저장',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(height: 16),
@@ -446,18 +644,3 @@ class _TagAddState extends State<TagAdd> {
     );
   }
 }
-
-final List<String> dummyTags = [
-  '운동하기 🏋',
-  '집안일 🧼',
-  '습관',
-  '공부하기',
-  '독서',
-  '건강 관리',
-  '운동하기 🏋',
-  '집안일 🧼',
-  '습관',
-  '공부하기',
-  '독서',
-  '건강 관리',
-];

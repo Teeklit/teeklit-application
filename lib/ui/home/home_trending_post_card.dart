@@ -3,12 +3,16 @@ import 'package:go_router/go_router.dart';
 import 'package:teeklit/config/colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../community/view_model/community_view_model.dart';
+
+import 'package:provider/provider.dart';
+
 class HomeTrendingPostCard extends StatelessWidget {
-  final List<Map<String, dynamic>> popularPosts;
+  final List<TrendingPostWithCommentCount> trendingPosts;
 
   const HomeTrendingPostCard({
     super.key,
-    required this.popularPosts,
+    required this.trendingPosts,
   });
 
   @override
@@ -51,36 +55,51 @@ class HomeTrendingPostCard extends StatelessWidget {
         const SizedBox(height: 4),
         SizedBox(
           height: 180,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: popularPosts.length,
-            itemBuilder: (context, index) {
-              return _PostCard(postInfo: popularPosts[index]);
-            },
-          ),
+          child:
+              trendingPosts.isEmpty
+              ? Center(
+                  child: Text(
+                    '인기 게시글을 불러올 수 없습니다',
+                    style: TextStyle(
+                      color: AppColors.TxtGrey,
+                      fontSize: 14,
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: trendingPosts.length,
+                  itemBuilder: (context, index) {
+                    return _TrendingPostCard(
+                      item: trendingPosts[index],
+                    );
+                  },
+                ),
         ),
       ],
     );
   }
 }
 
-class _PostCard extends StatelessWidget {
-  final Map<String, dynamic> postInfo;
+class _TrendingPostCard extends StatelessWidget {
+  final TrendingPostWithCommentCount item;
 
-  const _PostCard({
-    required this.postInfo,
+  const _TrendingPostCard({
+    required this.item,
   });
 
   @override
   Widget build(BuildContext context) {
-    final String postTitle = postInfo['postTitle'] ?? '';
-    final String postContents = postInfo['postContents'] ?? '';
-    final String picUrl = postInfo['picUrl'] ?? 'null';
-    final String category = postInfo['category'] ?? '';
-    final int commentCount = postInfo['commentCount'] ?? 0;
+    final post = item.post;
+    final commentCount = item.commentCount;
+
+    // ✏️ 변경 부분 1: imgUrls 안전성 확인
+    final hasImages =
+        post.imgUrls != null && post.imgUrls is List && post.imgUrls.isNotEmpty;
 
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
+        await context.read<CommunityViewModel>().selectedPost(post.postId!);
         context.push('/community/view');
       },
       child: Container(
@@ -99,12 +118,12 @@ class _PostCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    flex: picUrl != 'null' ? 3 : 5,
+                    flex: hasImages ? 3 : 5,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          postTitle,
+                          post.postTitle,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
@@ -115,7 +134,7 @@ class _PostCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          postContents,
+                          post.postContents,
                           style: const TextStyle(
                             color: AppColors.TxtLight,
                             fontSize: 12,
@@ -127,14 +146,16 @@ class _PostCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (picUrl != 'null') ...[
+                  if (hasImages) ...[
                     const SizedBox(width: 16),
                     Expanded(
                       flex: 2,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.network(
-                          picUrl,
+                          post.imgUrls[0],
+
+                          ///사잔이 여러장인 경우 첫번째 사진만 가져오기
                           fit: BoxFit.cover,
                           height: double.infinity,
                           errorBuilder: (context, error, stackTrace) {
@@ -165,10 +186,11 @@ class _PostCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   padding: const EdgeInsets.symmetric(
-                    vertical: 6, horizontal: 12,
+                    vertical: 6,
+                    horizontal: 12,
                   ),
                   child: Text(
-                    category,
+                    post.category,
                     style: const TextStyle(
                       color: AppColors.TxtDark,
                       fontWeight: FontWeight.w600,
@@ -208,6 +230,3 @@ class _PostCard extends StatelessWidget {
     );
   }
 }
-
-
-

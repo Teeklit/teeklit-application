@@ -275,7 +275,7 @@ class _RepeatBottomSheetState extends State<RepeatBottomSheet> {
                             minimumYear: DateTime.now().year,
                             maximumYear: DateTime.now().year + 5,
                             initialDateTime: _repeatEndDate,
-                            minimumDate: _repeatEndDate,
+                            minimumDate: DateTime.now().toDateOnly(),
                             mode: CupertinoDatePickerMode.date,
                             use24hFormat: true,
                             onDateTimeChanged: (DateTime newDate) {
