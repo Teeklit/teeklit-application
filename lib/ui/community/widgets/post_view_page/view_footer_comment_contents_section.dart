@@ -70,58 +70,62 @@ class _ViewFooterCommentContentsSectionState
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.txtGray,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  margin: EdgeInsets.only(top: 5),
-                  width: double.infinity,
-                  child: CustomTextButton(
-                    buttonText: Text(
-                      '신고',
-                      style: TextStyle(
-                        color: AppColors.ivory,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                      ),
+                if (widget.commentInfo.userId != widget.myId) ...[
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.txtGray,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    callback: () async {
-                      await widget.reportPost(
-                        commentId,
-                        TargetType.comment.value.toString(),
-                        widget.myId,
-                      );
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.txtGray,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  margin: EdgeInsets.only(top: 5),
-                  width: double.infinity,
-                  child: CustomTextButton(
-                    buttonText: Text(
-                      '차단',
-                      style: TextStyle(
-                        color: AppColors.ivory,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
+                    margin: EdgeInsets.only(top: 5),
+                    width: double.infinity,
+                    child: CustomTextButton(
+                      buttonText: Text(
+                        '신고',
+                        style: TextStyle(
+                          color: AppColors.ivory,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                        ),
                       ),
+                      callback: () async {
+                        await widget.reportPost(
+                          commentId,
+                          TargetType.comment.value.toString(),
+                          widget.myId,
+                        );
+                        Navigator.pop(context);
+                      },
                     ),
-                    callback: () async {
-                      await widget.blockUser();
-                      Navigator.pop(context);
+                  ),
+                ],
+                if (widget.commentInfo.userId != widget.myId) ...[
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.txtGray,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    margin: EdgeInsets.only(top: 5),
+                    width: double.infinity,
+                    child: CustomTextButton(
+                      buttonText: Text(
+                        '차단',
+                        style: TextStyle(
+                          color: AppColors.ivory,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                        ),
+                      ),
+                      callback: () async {
+                        await widget.blockUser();
+                        Navigator.pop(context);
 
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        context.go('/community/');
-                      });
-                    },
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          context.go('/community/');
+                        });
+                      },
+                    ),
                   ),
-                ),
+                ],
                 if (widget.isAdmin) ...[
                   Container(
                     decoration: BoxDecoration(
