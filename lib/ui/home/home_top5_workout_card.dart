@@ -64,9 +64,29 @@ class _WorkoutCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () async {
-        final url = Uri.parse(workout.videoUrl);
-        if (await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.externalApplication);
+        try {
+          final url = Uri.parse(workout.videoUrl);
+          if (await canLaunchUrl(url)) {
+            await launchUrl(url, mode: LaunchMode.externalApplication);
+          } else {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('YouTube 앱을 열 수 없습니다'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('링크를 열 수 없습니다: $e'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
         }
       },
       child: Container(
