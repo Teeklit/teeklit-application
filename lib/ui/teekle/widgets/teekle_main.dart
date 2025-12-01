@@ -19,6 +19,8 @@ import 'random_teekle_card.dart';
 import 'progress_card.dart';
 import 'package:teeklit/ui/teekle/view_model/view_model_teekle_setting.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
 
 class TeekleMainScreen extends StatefulWidget {
   const TeekleMainScreen({super.key});
@@ -492,7 +494,7 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
                   const SizedBox(height: 16),
 
                   RandomMoveCard(onPick: _onRandomPick),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 30),
 
                   Row(
                     children: [
@@ -506,10 +508,11 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
                           '리스트',
                           style: TextStyle(
                             color: _isCalendarMode
-                                ? Colors.white54
+                                ? AppColors.txtLight
                                 : Colors.white,
                             fontFamily: 'Paperlogy',
                             fontWeight: FontWeight.w500,
+                            fontSize: 16,
                           ),
                         ),
                       ),
@@ -525,9 +528,10 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
                           style: TextStyle(
                             color: _isCalendarMode
                                 ? Colors.white
-                                : Colors.white54,
+                                : AppColors.txtLight,
                             fontFamily: 'Paperlogy',
                             fontWeight: FontWeight.w500,
+                            fontSize: 16,
                           ),
                         ),
                       ),
@@ -544,11 +548,21 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
 
                       headerStyle: HeaderStyle(
                         formatButtonVisible: false,
-                        titleCentered: false,
+                        titleCentered: true,
                         titleTextStyle: TextStyle(
                           color: Colors.white,
                           fontFamily: 'Paperlogy',
                           fontWeight: FontWeight.w700,
+                        ),
+                        leftChevronIcon: Icon(
+                          Icons.chevron_left,
+                          color: AppColors.txtGray,
+                          size: 20.0,
+                        ),
+                        rightChevronIcon: Icon(
+                          Icons.chevron_right,
+                          color: AppColors.txtGray,
+                          size: 20.0,
                         ),
                       ),
 
@@ -640,6 +654,7 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
                         _loadTeeklesForMonth(newFocusedDay);
                       },
                     ),
+                  SizedBox(height: 16,),
 
                   teeklesForDayNotDone.isEmpty
                       ? Padding(
@@ -756,12 +771,23 @@ class _TeekleMainScreenState extends State<TeekleMainScreen> {
                                     time: teekle.noti.hasNoti == false
                                         ? null
                                         : '${teekle.noti.notiTime?.hour.toString().padLeft(2, '0')}:${teekle.noti.notiTime?.minute.toString().padLeft(2, '0')}',
+                                    type: teekle.type,
+                                    youtubeUrl: teekle.url,
+                                    onYoutubeTap: () async {
+                                      if (teekle.url != null) {
+                                        final url = Uri.parse(teekle.url!);
+                                        if (await canLaunchUrl(url)) {
+                                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                                        }
+                                      }
+                                    },
                                   ),
                                 ),
                               ),
                             );
                           },
                         ),
+                  SizedBox(height: 80,),
                 ],
               ),
             ),

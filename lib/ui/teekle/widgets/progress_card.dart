@@ -70,7 +70,7 @@ class ProgressCard extends StatelessWidget {
                           child: CircularProgressIndicator(
                             value: value,
                             strokeWidth: 6,
-                            backgroundColor: const Color(0xFF3B3B3B),
+                            backgroundColor: AppColors.inactiveTxtGray,
                             valueColor: const AlwaysStoppedAnimation(Color(
                                 0xFFE9A5B5)),
                           ),

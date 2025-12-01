@@ -217,7 +217,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
           hasNoti: _hasAlarm,
           notiTime: _hasAlarm ? _selectedAlarmTime : null,
         ),
-        url: url,
+        url: url ?? _url,
       );
 
       /// Task를 Repository를 통해 DB에 저장
@@ -509,7 +509,7 @@ class TeekleSettingViewModel extends ChangeNotifier {
           hasNoti: _hasAlarm,
           notiTime: _hasAlarm ? _selectedAlarmTime : null,
         ),
-        url: null,
+        url: _url,
         userId: _userId,
       );
 

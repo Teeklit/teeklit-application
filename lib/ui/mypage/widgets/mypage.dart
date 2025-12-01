@@ -104,8 +104,8 @@ class MyPageScreen extends StatelessWidget {
 
               _VersionItem(
                 title: '버전 정보',
-                latestVersion: '1.0.0',
-                currentVersion: '1.0.0',
+                latestVersion: '1.0.2',
+                currentVersion: '1.0.2',
                 onTap: () {},
               ),
               _MenuItem(

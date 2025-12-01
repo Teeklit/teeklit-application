@@ -549,6 +549,7 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
                       await viewModel.saveTask(
                         taskType: TaskType.workout,
                         tag: viewModel.selectedTag,
+                        url: viewModel.url,
                       );
                       if (mounted) Navigator.pop(context, true);
                     } else if (widget.type == TeeklePageType.editTodo ||

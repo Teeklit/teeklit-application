@@ -73,9 +73,10 @@ flutter_native_splash:
   android_gravity: center
   ios_content_mode: center
   fullscreen: true
+  android: true
   android_12:
-    color: "#FFFFFF"
-    image: "assets/icons/splash_logo.png"
+    color: "#2C2C2E"
+    image: "assets/icons/android12_splash_logo.png"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
