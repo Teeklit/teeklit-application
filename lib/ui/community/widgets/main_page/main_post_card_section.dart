@@ -31,7 +31,7 @@ class PostCard extends StatelessWidget {
     return GestureDetector(
       onTap: () async {
         await context.read<CommunityViewModel>().selectedPost(postId!);
-        context.go('/community/view');
+        context.push('/community/view');
       },
       child: Container(
         padding: const EdgeInsets.all(15),

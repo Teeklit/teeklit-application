@@ -71,7 +71,7 @@ class _ViewAppBarState extends State<ViewAppBar> {
                       callback: () async {
                         await widget.reportPost(
                           widget.postId,
-                          TargetType.post.value, // TODO id 변경
+                          TargetType.post.value,
                           widget.myId,
                         );
                         Navigator.pop(context);
@@ -222,7 +222,7 @@ class _ViewAppBarState extends State<ViewAppBar> {
       backgroundColor: AppColors.bg,
       leading: IconButton(
         onPressed: () {
-          context.go('/community/');
+          context.pop(context);
         },
         icon: Icon(Icons.chevron_left, color: AppColors.txtGray),
       ),

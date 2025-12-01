@@ -20,6 +20,7 @@ class CommunityMainPage extends StatelessWidget {
             Expanded(
               child: MainHeaderCategoriesButtonsSection(),
             ),
+            SizedBox(height: 8,),
             // SizedBox(
             //   height: Theme.of(context).textTheme.headlineLarge?.height,
             //   child:MainHeaderCategoriesButtons(categoryList: categoryList),
