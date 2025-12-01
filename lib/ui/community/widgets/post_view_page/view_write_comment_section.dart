@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:teeklit/ui/community/view_model/community_view_model.dart';
 import 'package:teeklit/ui/core/themes/colors.dart';
 import 'package:teeklit/ui/community/widgets/community_custom_buttons.dart';
 
@@ -22,9 +24,30 @@ class ViewWriteCommentSection extends StatefulWidget {
 }
 
 class ViewWriteCommentSectionState extends State<ViewWriteCommentSection> {
+
   final TextEditingController _commentController = TextEditingController();
 
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   void writeComment() {
+    if (context.read<CommunityViewModel>().myId.isEmpty) {
+      _showSnackBar(context, '로그인 정보가 유효하지 않습니다.');
+      return;
+    }
+
+    if(_commentController.text.isEmpty) {
+      _showSnackBar(context, '댓글을 입력해주세요.');
+      return;
+    }
+
     widget.vmCommentWrite(_commentController.text, widget.parentId);
     _commentController.clear();
   }

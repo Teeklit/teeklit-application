@@ -67,15 +67,64 @@ class _CommunityPostModifyPageState extends State<CommunityPostModifyPage> {
     super.dispose();
   }
 
-  void _submitForm() {
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _submitForm() async {
     if (_formkey.currentState!.validate()) {
       final postTitle = _titleController.text;
       final category = _categoryController.text;
       final postContents = _contentsController.text;
 
-      context.read<CommunityViewModel>().modifyPost(postTitle, postContents, category, _images);
+      final vm = context.read<CommunityViewModel>();
 
-      context.go('/community');
+      if (vm.myId.isEmpty) {
+        _showSnackBar(context, '로그인 정보가 유효하지 않습니다.');
+        return;
+      }
+
+      if(postTitle.isEmpty) {
+        _showSnackBar(context, '제목을 입력해주세요.');
+        return;
+      }
+
+      if (category.isEmpty) {
+        _showSnackBar(context, '카테고리를 선택해주세요.');
+        return;
+      }
+
+      if (postContents.isEmpty) {
+        _showSnackBar(context, '내용을 입력해주세요.');
+        return;
+      }
+
+      try {
+        await vm.modifyPost(
+            postTitle,
+            postContents,
+            category,
+            _images
+        );
+
+        if (context.mounted) {
+          context.goNamed('communityMain');
+          _showSnackBar(context, '게시글이 등록되었습니다.');
+        }
+      } catch (e) {
+        if (context.mounted) {
+          _showSnackBar(context, '게시글 등록에 실패했습니다: $e');
+        }
+      }
+
+      // context.read<CommunityViewModel>().modifyPost(postTitle, postContents, category, _images);
+      // context.go('/community');
     }
   }
 
@@ -148,8 +197,8 @@ class _CommunityPostModifyPageState extends State<CommunityPostModifyPage> {
             ),
 
             ModifyMediaSection(
-                onPickImages: _pickImages,
-                images: _images,
+              onPickImages: _pickImages,
+              images: _images,
               onRemoveImage: (img) {
                 setState(() => _images.remove(img));
               },
