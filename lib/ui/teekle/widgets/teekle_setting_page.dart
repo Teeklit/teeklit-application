@@ -170,284 +170,137 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<TeekleSettingViewModel>.value(
       value: _viewModel,
-      child: Scaffold(
-        backgroundColor: AppColors.Bg,
-        resizeToAvoidBottomInset: false,
-
-        appBar: AppBar(
-          backgroundColor: AppColors.Bg,
-          foregroundColor: Colors.white,
-          shape: Border(
-            bottom: BorderSide(color: AppColors.StrokeGrey, width: 1),
-          ),
-          title: Text(
-            widget.type == TeeklePageType.addTodo
-                ? '투두 추가하기'
-                : widget.type == TeeklePageType.editTodo
-                ? '투두 수정하기'
-                : widget.type == TeeklePageType.addWorkout
-                ? '운동 추가하기'
-                : widget.type == TeeklePageType.editWorkout
-                ? '운동 수정하기'
-                : '',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-          ),
-          leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: Icon(Icons.chevron_left, color: AppColors.TxtGrey, size: 24),
-          ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.paddingOf(context).bottom + 20,
         ),
+        child: Scaffold(
+          backgroundColor: AppColors.Bg,
+          resizeToAvoidBottomInset: false,
 
-        body: Consumer<TeekleSettingViewModel>(
-          builder: (context, viewModel, child) {
-            return GestureDetector(
-              onTap: () {
-                FocusManager.instance.primaryFocus?.unfocus();
+          appBar: AppBar(
+            backgroundColor: AppColors.Bg,
+            foregroundColor: Colors.white,
+            shape: Border(
+              bottom: BorderSide(color: AppColors.StrokeGrey, width: 1),
+            ),
+            title: Text(
+              widget.type == TeeklePageType.addTodo
+                  ? '투두 추가하기'
+                  : widget.type == TeeklePageType.editTodo
+                  ? '투두 수정하기'
+                  : widget.type == TeeklePageType.addWorkout
+                  ? '운동 추가하기'
+                  : widget.type == TeeklePageType.editWorkout
+                  ? '운동 수정하기'
+                  : '',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+            ),
+            leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
               },
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 26,
-                    horizontal: 16,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.type == TeeklePageType.addTodo ||
-                                widget.type == TeeklePageType.editTodo
-                            ? '투두 이름'
-                            : '운동 선택',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        onTap: () async {
-                          if(widget.type == TeeklePageType.addWorkout) {
-                            final dynamic result = await context.push('/teekle/selectWorkout');
-                            Map<String, dynamic>? _resultMap = result;
-                            if(result != null) {
-                              setState(() {
-                                _titleController.text = _resultMap?['title'];
-                                viewModel.setTitle(_resultMap?['title']);
-                                viewModel.setUrl(_resultMap?['videoUrl']);
-                                print('${_resultMap?['videoUrl']}');
-                              });
-                            }
-                          }
-                        },
-                        focusNode: _titleFocusNode,
-                        controller: _titleController,
-                        keyboardType: TextInputType.multiline,
-                        cursorColor: AppColors.Green,
-                        style: const TextStyle(color: Colors.white),
-                        onChanged: (value) {
-                          context.read<TeekleSettingViewModel>().setTitle(
-                            value.trim(),
-                          );
-                        },
-                        decoration: InputDecoration(
-                          hintText:
-                              widget.type == TeeklePageType.addTodo ||
+              icon: Icon(
+                Icons.chevron_left,
+                color: AppColors.TxtGrey,
+                size: 24,
+              ),
+            ),
+          ),
+
+          body: Consumer<TeekleSettingViewModel>(
+            builder: (context, viewModel, child) {
+              return GestureDetector(
+                onTap: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                },
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 26,
+                      horizontal: 16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.type == TeeklePageType.addTodo ||
                                   widget.type == TeeklePageType.editTodo
-                              ? '할일을 입력해주세요.'
-                              : '운동을 선택해주세요.',
-                          hintStyle: const TextStyle(color: Color(0xff8E8E93)),
-                          filled: true,
-                          fillColor: const Color(0xff3A3A3C),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
+                              ? '투두 이름'
+                              : '운동 선택',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
-                          border: OutlineInputBorder(
+                        ),
+                        const SizedBox(height: 10),
+                        TextField(
+                          onTap: () async {
+                            if (widget.type == TeeklePageType.addWorkout) {
+                              final dynamic result = await context.push(
+                                '/teekle/selectWorkout',
+                              );
+                              Map<String, dynamic>? _resultMap = result;
+                              if (result != null) {
+                                setState(() {
+                                  _titleController.text = _resultMap?['title'];
+                                  viewModel.setTitle(_resultMap?['title']);
+                                  viewModel.setUrl(_resultMap?['videoUrl']);
+                                  print('${_resultMap?['videoUrl']}');
+                                });
+                              }
+                            }
+                          },
+                          focusNode: _titleFocusNode,
+                          controller: _titleController,
+                          keyboardType: TextInputType.multiline,
+                          cursorColor: AppColors.Green,
+                          style: const TextStyle(color: Colors.white),
+                          onChanged: (value) {
+                            context.read<TeekleSettingViewModel>().setTitle(
+                              value.trim(),
+                            );
+                          },
+                          decoration: InputDecoration(
+                            hintText:
+                                widget.type == TeeklePageType.addTodo ||
+                                    widget.type == TeeklePageType.editTodo
+                                ? '할일을 입력해주세요.'
+                                : '운동을 선택해주세요.',
+                            hintStyle: const TextStyle(
+                              color: Color(0xff8E8E93),
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xff3A3A3C),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+
+                        /// 설정 박스
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xff3A3A3C),
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
-                      /// 설정 박스
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xff3A3A3C),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          children: [
-                            /// 날짜
-                            ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 0,
-                              ),
-                              title: const Text(
-                                '날짜',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    DateFormat(
-                                      'MM월 dd일',
-                                    ).format(viewModel.selectedDate),
-                                    style: const TextStyle(
-                                      color: AppColors.TxtLight,
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 13,
-                                      letterSpacing: -.2,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  const Icon(
-                                    Icons.chevron_right,
-                                    color: Colors.white70,
-                                  ),
-                                ],
-                              ),
-                              onTap: () async {
-                                /// 텍스트필드에 포커스가 있으면 실행 안 함
-                                if (_titleFocusNode.hasFocus) return;
-                                final pickedDate = await showTeekleDateSetting(
-                                  context,
-                                  viewModel.selectedDate,
-                                );
-                                viewModel.setDate(pickedDate);
-                              },
-                            ),
-                            const Divider(color: Color(0xff2C2C2E), height: 1),
-
-                            /// 알림 (토글)
-                            // ListTile(
-                            //   contentPadding: const EdgeInsets.symmetric(
-                            //     horizontal: 16,
-                            //     vertical: 0,
-                            //   ),
-                            //   title: const Text(
-                            //     '알림',
-                            //     style: TextStyle(
-                            //       color: Colors.white,
-                            //       fontWeight: FontWeight.w500,
-                            //     ),
-                            //   ),
-                            //   trailing: Row(
-                            //     mainAxisSize: MainAxisSize.min,
-                            //     children: [
-                            //       if (viewModel.hasAlarm)
-                            //         GestureDetector(
-                            //           onTap: () {
-                            //             /// 이름 텍스트필드에 포커스가 있으면 실행 안 함
-                            //             if (_titleFocusNode.hasFocus) {
-                            //               return;
-                            //             }
-                            //             _handleAlarmTime(viewModel);
-                            //           },
-                            //           child: Container(
-                            //             padding: const EdgeInsets.symmetric(
-                            //               horizontal: 12,
-                            //               vertical: 6,
-                            //             ),
-                            //             decoration: BoxDecoration(
-                            //               color: Colors.grey.shade700,
-                            //               borderRadius: BorderRadius.circular(
-                            //                 20,
-                            //               ),
-                            //             ),
-                            //             child: Text(
-                            //               DateFormat(
-                            //                 'h:mm a',
-                            //               ).format(viewModel.selectedTime),
-                            //               style: const TextStyle(
-                            //                 color: Colors.white,
-                            //                 fontWeight: FontWeight.w500,
-                            //               ),
-                            //             ),
-                            //           ),
-                            //         ),
-                            //       const SizedBox(width: 8),
-                            //       Switch.adaptive(
-                            //         value: viewModel.hasAlarm,
-                            //         onChanged: (value) {
-                            //           /// 텍스트필드에 포커스가 있으면 실행 안 함
-                            //           if (_titleFocusNode.hasFocus) return;
-                            //           _handleAlarmToggle(value, viewModel);
-                            //         },
-                            //         activeThumbColor: Colors.white,
-                            //         activeTrackColor: const Color(0xffB1C39F),
-                            //         inactiveThumbColor: Colors.white,
-                            //         inactiveTrackColor: Colors.grey.shade700,
-                            //       ),
-                            //     ],
-                            //   ),
-                            // ),
-
-                            const Divider(color: Color(0xff2C2C2E), height: 1),
-
-                            /// 반복 (토글 스위치)
-                            ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 0,
-                              ),
-                              title: const Text(
-                                '반복',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (viewModel.hasRepeat)
-                                    GestureDetector(
-                                      ///투명 컨테이너 탭 작동하도록 설정
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: () {
-                                        /// 텍스트필드에 포커스가 있으면 실행 안 함
-                                        if (_titleFocusNode.hasFocus) return;
-                                        _handleRepeat(viewModel);
-                                      },
-                                      child: Container(width: 60, height: 30),
-                                    ),
-                                  Switch.adaptive(
-                                    value: viewModel.hasRepeat,
-                                    onChanged: (bool value) {
-                                      /// 텍스트필드에 포커스가 있으면 실행 안 함
-                                      if (_titleFocusNode.hasFocus) return;
-                                      _handleRepeatToggle(value, viewModel);
-                                    },
-                                    activeThumbColor: Colors.white,
-                                    activeTrackColor: const Color(0xffB1C39F),
-                                    inactiveThumbColor: Colors.white,
-                                    inactiveTrackColor: Colors.grey.shade700,
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            const Divider(color: Color(0xff2C2C2E), height: 1),
-
-                            /// 태그 (화살표 아이콘)
-                            if (widget.type == TeeklePageType.addTodo ||
-                                widget.type == TeeklePageType.editTodo)
+                          child: Column(
+                            children: [
+                              /// 날짜
                               ListTile(
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                   vertical: 0,
                                 ),
                                 title: const Text(
-                                  '태그',
+                                  '날짜',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w500,
@@ -456,20 +309,18 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    if (viewModel.selectedTag != null)
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: 6.0,
-                                        ),
-                                        child: Text(
-                                          viewModel.selectedTag!.tagName,
-                                          style: const TextStyle(
-                                            color: AppColors.TxtLight,
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 13,
-                                          ),
-                                        ),
+                                    Text(
+                                      DateFormat(
+                                        'MM월 dd일',
+                                      ).format(viewModel.selectedDate),
+                                      style: const TextStyle(
+                                        color: AppColors.TxtLight,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 13,
+                                        letterSpacing: -.2,
                                       ),
+                                    ),
+                                    const SizedBox(width: 6),
                                     const Icon(
                                       Icons.chevron_right,
                                       color: Colors.white70,
@@ -479,59 +330,232 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
                                 onTap: () async {
                                   /// 텍스트필드에 포커스가 있으면 실행 안 함
                                   if (_titleFocusNode.hasFocus) return;
-                                  _handleTag(viewModel);
+                                  final pickedDate =
+                                      await showTeekleDateSetting(
+                                        context,
+                                        viewModel.selectedDate,
+                                      );
+                                  viewModel.setDate(pickedDate);
                                 },
                               ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 32,),
-                      /// 삭제버튼
-                      if (widget.type == TeeklePageType.editTodo ||
-                          widget.type == TeeklePageType.editWorkout)
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              /// 해당 날짜의 teekle만 삭제
-                              bool success = await context
-                                  .read<TeekleSettingViewModel>()
-                                  .deleteTeekleAtDate(
-                                widget.teekleToEdit!.teekleId,
-                              );
+                              const Divider(
+                                color: Color(0xff2C2C2E),
+                                height: 1,
+                              ),
 
-                              if (success && mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('삭제되었습니다')),
-                                );
-                                Navigator.pop(context, true);
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.WarningRed,
-                              padding: EdgeInsets.all(16),
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(16),
+                              /// 알림 (토글)
+                              // ListTile(
+                              //   contentPadding: const EdgeInsets.symmetric(
+                              //     horizontal: 16,
+                              //     vertical: 0,
+                              //   ),
+                              //   title: const Text(
+                              //     '알림',
+                              //     style: TextStyle(
+                              //       color: Colors.white,
+                              //       fontWeight: FontWeight.w500,
+                              //     ),
+                              //   ),
+                              //   trailing: Row(
+                              //     mainAxisSize: MainAxisSize.min,
+                              //     children: [
+                              //       if (viewModel.hasAlarm)
+                              //         GestureDetector(
+                              //           onTap: () {
+                              //             /// 이름 텍스트필드에 포커스가 있으면 실행 안 함
+                              //             if (_titleFocusNode.hasFocus) {
+                              //               return;
+                              //             }
+                              //             _handleAlarmTime(viewModel);
+                              //           },
+                              //           child: Container(
+                              //             padding: const EdgeInsets.symmetric(
+                              //               horizontal: 12,
+                              //               vertical: 6,
+                              //             ),
+                              //             decoration: BoxDecoration(
+                              //               color: Colors.grey.shade700,
+                              //               borderRadius: BorderRadius.circular(
+                              //                 20,
+                              //               ),
+                              //             ),
+                              //             child: Text(
+                              //               DateFormat(
+                              //                 'h:mm a',
+                              //               ).format(viewModel.selectedTime),
+                              //               style: const TextStyle(
+                              //                 color: Colors.white,
+                              //                 fontWeight: FontWeight.w500,
+                              //               ),
+                              //             ),
+                              //           ),
+                              //         ),
+                              //       const SizedBox(width: 8),
+                              //       Switch.adaptive(
+                              //         value: viewModel.hasAlarm,
+                              //         onChanged: (value) {
+                              //           /// 텍스트필드에 포커스가 있으면 실행 안 함
+                              //           if (_titleFocusNode.hasFocus) return;
+                              //           _handleAlarmToggle(value, viewModel);
+                              //         },
+                              //         activeThumbColor: Colors.white,
+                              //         activeTrackColor: const Color(0xffB1C39F),
+                              //         inactiveThumbColor: Colors.white,
+                              //         inactiveTrackColor: Colors.grey.shade700,
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
+                              const Divider(
+                                color: Color(0xff2C2C2E),
+                                height: 1,
+                              ),
+
+                              /// 반복 (토글 스위치)
+                              ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 0,
+                                ),
+                                title: const Text(
+                                  '반복',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (viewModel.hasRepeat)
+                                      GestureDetector(
+                                        ///투명 컨테이너 탭 작동하도록 설정
+                                        behavior: HitTestBehavior.opaque,
+                                        onTap: () {
+                                          /// 텍스트필드에 포커스가 있으면 실행 안 함
+                                          if (_titleFocusNode.hasFocus) return;
+                                          _handleRepeat(viewModel);
+                                        },
+                                        child: Container(width: 60, height: 30),
+                                      ),
+                                    Switch.adaptive(
+                                      value: viewModel.hasRepeat,
+                                      onChanged: (bool value) {
+                                        /// 텍스트필드에 포커스가 있으면 실행 안 함
+                                        if (_titleFocusNode.hasFocus) return;
+                                        _handleRepeatToggle(value, viewModel);
+                                      },
+                                      activeThumbColor: Colors.white,
+                                      activeTrackColor: const Color(0xffB1C39F),
+                                      inactiveThumbColor: Colors.white,
+                                      inactiveTrackColor: Colors.grey.shade700,
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                            child: const Icon(
-                              Icons.delete_outline_rounded,
-                              color: Colors.white,
-                              size: 24,
-                            ),
+
+                              const Divider(
+                                color: Color(0xff2C2C2E),
+                                height: 1,
+                              ),
+
+                              /// 태그 (화살표 아이콘)
+                              if (widget.type == TeeklePageType.addTodo ||
+                                  widget.type == TeeklePageType.editTodo)
+                                ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 0,
+                                  ),
+                                  title: const Text(
+                                    '태그',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (viewModel.selectedTag != null)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            right: 6.0,
+                                          ),
+                                          child: Text(
+                                            viewModel.selectedTag!.tagName,
+                                            style: const TextStyle(
+                                              color: AppColors.TxtLight,
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ),
+                                      const Icon(
+                                        Icons.chevron_right,
+                                        color: Colors.white70,
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: () async {
+                                    /// 텍스트필드에 포커스가 있으면 실행 안 함
+                                    if (_titleFocusNode.hasFocus) return;
+                                    _handleTag(viewModel);
+                                  },
+                                ),
+                            ],
                           ),
                         ),
-                    ],
+                        SizedBox(
+                          height: 32,
+                        ),
+
+                        /// 삭제버튼
+                        if (widget.type == TeeklePageType.editTodo ||
+                            widget.type == TeeklePageType.editWorkout)
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                /// 해당 날짜의 teekle만 삭제
+                                bool success = await context
+                                    .read<TeekleSettingViewModel>()
+                                    .deleteTeekleAtDate(
+                                      widget.teekleToEdit!.teekleId,
+                                    );
+
+                                if (success && mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('삭제되었습니다')),
+                                  );
+                                  Navigator.pop(context, true);
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.WarningRed,
+                                padding: EdgeInsets.all(16),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(16),
+                                  ),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.delete_outline_rounded,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
+              );
+            },
+          ),
 
-        bottomNavigationBar: Consumer<TeekleSettingViewModel>(
+          bottomNavigationBar: Consumer<TeekleSettingViewModel>(
             builder: (context, viewModel, child) {
               return GestureDetector(
                 onTap: () async {
@@ -549,7 +573,6 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
                       await viewModel.saveTask(
                         taskType: TaskType.workout,
                         tag: viewModel.selectedTag,
-                        url: viewModel.url,
                       );
                       if (mounted) Navigator.pop(context, true);
                     } else if (widget.type == TeeklePageType.editTodo ||
@@ -573,14 +596,17 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
                   width: double.infinity,
                   height: 92,
                   decoration: BoxDecoration(
-                    color: viewModel.title.isNotEmpty ? AppColors.Green : AppColors
-                        .InactiveGreyBg,
+                    color: viewModel.title.isNotEmpty
+                        ? AppColors.Green
+                        : AppColors.InactiveGreyBg,
                   ),
                   child: Center(
                     child: Text(
                       '저장하기',
                       style: TextStyle(
-                        color: viewModel.title.isNotEmpty ? AppColors.TxtDark : Colors.white,
+                        color: viewModel.title.isNotEmpty
+                            ? AppColors.TxtDark
+                            : Colors.white,
                         fontWeight: FontWeight.w600,
                         fontSize: 18,
                       ),
@@ -588,7 +614,8 @@ class _TeekleSettingPage extends State<TeekleSettingPage> {
                   ),
                 ),
               );
-            }
+            },
+          ),
         ),
       ),
     );
